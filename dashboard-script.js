@@ -40,7 +40,7 @@ closeSidebarBtn.addEventListener('click', () => {
     // Sign out functionality
     document.getElementById('signOutBtn').addEventListener('click', function() {
       auth.signOut().then(() => {
-        window.location.href = "landing-page.html";
+        window.location.href = "index.html";
       }).catch((error) => {
         console.error("Sign out error:", error);
         showNotification('Failed to sign out. Please try again.', 'error');
