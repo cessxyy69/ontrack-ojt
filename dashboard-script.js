@@ -17,35 +17,35 @@ closeSidebarBtn.addEventListener('click', () => {
 /* END JS FOR SIDEBAR */
 
 // Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyBA4IwkROlhrz2ts19gLD48Cio_D0qiqbw",
-      authDomain: "ontrack-585a4.firebaseapp.com",
-      projectId: "ontrack-585a4",
-      storageBucket: "ontrack-585a4.firebasestorage.app",
-      messagingSenderId: "799924979752",
-      appId: "1:799924979752:web:8a9579035dc75ea16dcd1d",
-      measurementId: "G-TBF0Y7BNDK"
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyBA4IwkROlhrz2ts19gLD48Cio_D0qiqbw",
+  authDomain: "ontrack-585a4.firebaseapp.com",
+  projectId: "ontrack-585a4",
+  storageBucket: "ontrack-585a4.firebasestorage.app",
+  messagingSenderId: "799924979752",
+  appId: "1:799924979752:web:8a9579035dc75ea16dcd1d",
+  measurementId: "G-TBF0Y7BNDK"
+};
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
 
-    // Global variables
-    let currentUser = null;
-    let userData = null;
+// Global variables
+let currentUser = null;
+let userData = null;
 
-    // Sign out functionality
-    document.getElementById('signOutBtn').addEventListener('click', function() {
-      auth.signOut().then(() => {
-        window.location.href = "index.html";
-      }).catch((error) => {
-        console.error("Sign out error:", error);
-        showNotification('Failed to sign out. Please try again.', 'error');
-      });
-    });
+// Sign out functionality
+document.getElementById('signOutBtn').addEventListener('click', function() {
+  auth.signOut().then(() => {
+    window.location.href = "index.html";
+  }).catch((error) => {
+    console.error("Sign out error:", error);
+    showNotification('Failed to sign out. Please try again.', 'error');
+  });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
     // Get DOM elements
@@ -57,6 +57,44 @@ document.addEventListener('DOMContentLoaded', function () {
     const successPopup = document.getElementById('successPopup');
     const activityLogForm = document.getElementById('activityLogForm');
     const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+
+    // Function to load user data from Firebase
+    function loadUserData() {
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                currentUser = user;
+                
+                // Fetch user data from Firestore
+                db.collection('users').doc(user.uid).get().then((doc) => {
+                    if (doc.exists) {
+                        userData = doc.data();
+                        
+                        // Set required hours from user data
+                        const requiredHours = userData.requiredHours || 0;
+                        
+                        // Update required hours display
+                        const requiredHoursElement = document.getElementById('requiredHours');
+                        if (requiredHoursElement) {
+                            requiredHoursElement.textContent = requiredHours;
+                            
+                            // Save to localStorage for offline access
+                            localStorage.setItem('requiredHours', requiredHours);
+                        }
+                        
+                        // Update progress after setting required hours
+                        updateProgressCards();
+                    } else {
+                        console.log("No user data found!");
+                    }
+                }).catch((error) => {
+                    console.error("Error getting user data:", error);
+                });
+            } else {
+                // Redirect to login if not logged in
+                window.location.href = "login.html";
+            }
+        });
+    }
 
     // Function to update recent activities display
     function displayRecentActivities() {
@@ -137,7 +175,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return timeString; // Return original if error occurs
         }
     }
-
 
     // Handle form submission
     if (activityLogForm) {
@@ -295,25 +332,40 @@ document.addEventListener('DOMContentLoaded', function () {
         // Get logs from localStorage
         const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
 
-        // Calculate total hours (excluding rejected logs)
+        // Initialize totalHours to 0
         let totalHours = 0;
-        logs.forEach(log => {
-            if (log.status !== 'rejected') {
-                totalHours += parseFloat(log.hours);
-            }
-        });
+        
+        // Only calculate hours if there are valid logs
+        if (logs.length > 0) {
+            // Calculate total hours (excluding rejected logs)
+            logs.forEach(log => {
+                if (log.status !== 'rejected') {
+                    totalHours += parseFloat(log.hours) || 0; // Use 0 if parsing fails
+                }
+            });
+        }
 
         // Round total hours to nearest whole number
         totalHours = Math.round(totalHours);
 
-        // Get required hours
-        const requiredHours = parseInt(requiredHoursElement.textContent) || 486;
+        // Get required hours - first try from Firestore user data, then localStorage, default to 0
+        let requiredHours = 0;
+        
+        if (userData && userData.requiredHours) {
+            requiredHours = parseInt(userData.requiredHours);
+        } else {
+            requiredHours = parseInt(localStorage.getItem('requiredHours')) || 0;
+        }
+        
+        // Update required hours display
+        requiredHoursElement.textContent = requiredHours;
 
-        // Calculate completion percentage
-        const completionPercentage = Math.min(100, Math.round((totalHours / requiredHours) * 100));
+        // Calculate completion percentage (avoid division by zero)
+        const completionPercentage = requiredHours > 0 ? 
+            Math.min(100, Math.round((totalHours / requiredHours) * 100)) : 0;
 
         // Update UI
-        totalHoursElement.textContent = totalHours;
+        totalHoursElement.textContent = totalHours.toString();
         completionElement.textContent = `${completionPercentage}%`;
         progressFill.style.width = `${completionPercentage}%`;
 
@@ -332,27 +384,56 @@ document.addEventListener('DOMContentLoaded', function () {
     const editHoursBtn = document.querySelector('.edit-hours-btn');
     if (editHoursBtn) {
         editHoursBtn.addEventListener('click', function () {
-            // After hours are updated
-            updateProgressCards();
+            handleRequiredHoursEdit();
         });
     }
 
     function initializeRequiredHours() {
-        // Default required hours if not set
-        const defaultHours = 486;
-        let savedHours = localStorage.getItem('requiredHours');
-
-        if (!savedHours) {
-            localStorage.setItem('requiredHours', defaultHours);
-            savedHours = defaultHours;
-        }
-
-        // Update UI with saved hours
-        const requiredHoursElement = document.getElementById('requiredHours');
-        if (requiredHoursElement) {
-            requiredHoursElement.textContent = savedHours;
-            updateCompletionPercentage(savedHours);
-        }
+        // Try to get user data from Firebase first
+        auth.onAuthStateChanged(function(user) {
+            if (user) {
+                db.collection('users').doc(user.uid).get().then((doc) => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        const requiredHours = userData.requiredHours || 0;
+                        
+                        // Update localStorage and UI
+                        localStorage.setItem('requiredHours', requiredHours);
+                        
+                        const requiredHoursElement = document.getElementById('requiredHours');
+                        if (requiredHoursElement) {
+                            requiredHoursElement.textContent = requiredHours;
+                            updateProgressCards();
+                        }
+                    } else {
+                        // Fallback to localStorage if user data doesn't exist
+                        const savedHours = localStorage.getItem('requiredHours') || 0;
+                        const requiredHoursElement = document.getElementById('requiredHours');
+                        if (requiredHoursElement) {
+                            requiredHoursElement.textContent = savedHours;
+                            updateProgressCards();
+                        }
+                    }
+                }).catch((error) => {
+                    console.error("Error getting user data:", error);
+                    // Fallback to localStorage
+                    const savedHours = localStorage.getItem('requiredHours') || 0;
+                    const requiredHoursElement = document.getElementById('requiredHours');
+                    if (requiredHoursElement) {
+                        requiredHoursElement.textContent = savedHours;
+                        updateProgressCards();
+                    }
+                });
+            } else {
+                // No user, fallback to localStorage
+                const savedHours = localStorage.getItem('requiredHours') || 0;
+                const requiredHoursElement = document.getElementById('requiredHours');
+                if (requiredHoursElement) {
+                    requiredHoursElement.textContent = savedHours;
+                    updateProgressCards();
+                }
+            }
+        });
     }
 
     function updateCompletionPercentage(requiredHours) {
@@ -363,7 +444,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!totalHoursElement || !completionElement || !progressFill) return;
 
         const totalHours = parseInt(totalHoursElement.textContent) || 0;
-        const completion = Math.min(100, Math.round((totalHours / requiredHours) * 100));
+        const completion = requiredHours > 0 ? 
+            Math.min(100, Math.round((totalHours / requiredHours) * 100)) : 0;
 
         completionElement.textContent = `${completion}%`;
         progressFill.style.width = `${completion}%`;
@@ -410,7 +492,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            // Save to localStorage
             localStorage.setItem('requiredHours', newHours);
+            
+            // If user is logged in, update Firestore too
+            if (currentUser) {
+                db.collection('users').doc(currentUser.uid).update({
+                    requiredHours: parseInt(newHours)
+                }).catch(error => {
+                    console.error("Error updating required hours in Firestore:", error);
+                });
+            }
+            
             document.getElementById('requiredHours').textContent = newHours;
             updateCompletionPercentage(newHours);
             updateProgressCards();
@@ -447,6 +540,32 @@ document.addEventListener('DOMContentLoaded', function () {
                 targetDateElement.textContent = formattedDate;
                 updateDaysLeft(dateObj);
             }
+        } else {
+            // Try to get from Firebase if no local storage
+            auth.onAuthStateChanged(function(user) {
+                if (user) {
+                    db.collection('users').doc(user.uid).get().then((doc) => {
+                        if (doc.exists && doc.data().ojtPeriod && doc.data().ojtPeriod.endDate) {
+                            const endDate = new Date(doc.data().ojtPeriod.endDate);
+                            const formattedDate = endDate.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            });
+                            
+                            // Save to localStorage
+                            localStorage.setItem('targetDate', doc.data().ojtPeriod.endDate);
+                            
+                            // Update UI
+                            const targetDateElement = document.getElementById('targetDate');
+                            if (targetDateElement) {
+                                targetDateElement.textContent = formattedDate;
+                                updateDaysLeft(endDate);
+                            }
+                        }
+                    });
+                }
+            });
         }
 
         // Add click handler for edit date button
@@ -508,6 +627,15 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Save to localStorage
                 localStorage.setItem('targetDate', input.value);
                 localStorage.setItem('targetDateFormatted', formattedDate);
+                
+                // If user is logged in, update Firestore too
+                if (currentUser) {
+                    db.collection('users').doc(currentUser.uid).update({
+                        'ojtPeriod.endDate': input.value
+                    }).catch(error => {
+                        console.error("Error updating target date in Firestore:", error);
+                    });
+                }
 
                 // Update UI
                 document.getElementById('targetDate').textContent = formattedDate;
@@ -547,34 +675,8 @@ document.addEventListener('DOMContentLoaded', function () {
         // Get tasks from localStorage or initialize empty array if none exists
         const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
 
-        // If no tasks exist, create some sample data
-        if (tasks.length === 0) {
-            const sampleTasks = [
-                {
-                    title: "Complete Weekly Report",
-                    dueDate: "2025-05-15",
-                    status: "Pending",
-                    priority: "high"
-                },
-                {
-                    title: "Submit Documentation",
-                    dueDate: "2025-05-10",
-                    status: "In Progress",
-                    priority: "normal"
-                },
-                {
-                    title: "Team Progress Meeting",
-                    dueDate: "2025-05-08",
-                    status: "Pending",
-                    priority: "high"
-                }
-            ];
-            localStorage.setItem('tasks', JSON.stringify(sampleTasks));
-            displayUpcomingTasks(sampleTasks);
-        } else {
-            displayUpcomingTasks(tasks);
-        }
-
+        displayUpcomingTasks(tasks);
+        
         // Update pending tasks count in dashboard card
         const pendingTasksCount = tasks.filter(task =>
             task.status.toLowerCase() === 'pending'
@@ -629,19 +731,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add click event listener to create task button
     const createTaskBtn = document.getElementById('createTaskBtn');
-    createTaskBtn.addEventListener('click', () => {
-        document.getElementById('overlay').classList.add('active');
-    });
+    if (createTaskBtn) {
+        createTaskBtn.addEventListener('click', () => {
+            document.getElementById('overlay').classList.add('active');
+        });
+    }
 
     // Update the closeForm function
     function closeForm() {
         const form = document.querySelector('.add-task-form');
-        form.reset();
-        document.getElementById('formTitle').textContent = 'Add New Task';
-        document.getElementById('submitBtn').textContent = 'Add Task';
-        isEditing = false;
-        editingTaskIndex = null;
-        document.getElementById('overlay').classList.remove('active');
+        if (form) {
+            form.reset();
+            document.getElementById('formTitle').textContent = 'Add New Task';
+            document.getElementById('submitBtn').textContent = 'Add Task';
+            isEditing = false;
+            editingTaskIndex = null;
+            document.getElementById('overlay').classList.remove('active');
+        }
     }
 
     // Function to handle form submission
@@ -686,16 +792,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Make these functions globally available
     window.closeForm = closeForm;
     window.addTask = addTask;
+    window.showEditHours = handleRequiredHoursEdit;
+
+    // Initialize authentication listener for user data
+    loadUserData();
 
     // Initialize on page load
-    document.addEventListener('DOMContentLoaded', initializeRequiredHours);
-    document.addEventListener('DOMContentLoaded', displayRecentActivities);
-
-    // Call updateProgressCards initially
-    initializeTargetDate();
     initializeRequiredHours();
+    initializeTargetDate();
     updateProgressCards();
     updateRecentActivities();
     fetchUpcomingTasks();
 });
-
