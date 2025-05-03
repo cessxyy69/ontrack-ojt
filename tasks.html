@@ -18,8 +18,6 @@
             background-color: #f7f9fc;
         }
 
-
-        
         header {
             background-color: white;
             display: flex;
@@ -917,7 +915,6 @@
     </div>
 
     <script>
-
         /* START JS FOR SIDEBAR */
         const openSidebarBtn = document.getElementById('openSidebar');
         const closeSidebarBtn = document.getElementById('closeSidebar');
@@ -955,8 +952,31 @@
         let isEditing = false;
         let editingTaskIndex = null;
         let currentlyViewedTask = null;
+        let isNewUser = false;
+
+        // Check if the user is new to the application
+        function checkIfNewUser() {
+            // Check if the user has visited the tasks page before
+            const hasVisitedBefore = localStorage.getItem('hasVisitedTasksPage');
+            
+            if (!hasVisitedBefore) {
+                // This is a new user
+                isNewUser = true;
+                // Set flag to remember they've visited
+                localStorage.setItem('hasVisitedTasksPage', 'true');
+                
+                // Clear any existing tasks for new users
+                localStorage.removeItem('tasks');
+                tasks = [];
+                
+            }
+        }
 
         window.onload = () => {
+            // First check if this is a new user
+            checkIfNewUser();
+            
+            // Then load tasks - will be empty for new users
             loadTasks();
             renderTasks();
             updateStats();
@@ -1223,6 +1243,10 @@
                 if (tasks[editingTaskIndex].subtasks) {
                     newTask.subtasks = tasks[editingTaskIndex].subtasks;
                 }
+                // Preserve existing attachments when editing
+                if (tasks[editingTaskIndex].attachments) {
+                    newTask.attachments = tasks[editingTaskIndex].attachments;
+                }
                 // Replace the existing task with the updated one
                 tasks[editingTaskIndex] = newTask;
             } else {
@@ -1367,25 +1391,25 @@
 
                 taskCard.innerHTML = `
           <button class="more-btn" onclick="toggleDropdown(this)">⋮</button>
-    <div class="dropdown">
+        <div class="dropdown">
         <button onclick="editTask(${originalIndex})">Edit</button>
         <button onclick="archiveTask(${originalIndex})">Archive</button>
         <button onclick="deleteTask(${originalIndex})">Delete</button>
-    </div>
+        </div>
 
-    <div class="tags">
+        <div class="tags">
         <span class="tag">${task.priority}</span>
         <span class="tag" style="background: ${statusBgColor}">${task.status}</span>
         ${isOverdue ? '<span class="tag overdue" style="background: #fee2e2">Overdue</span>' : ''}
-    </div>
-    <h3>${task.title}</h3>
-    <p>Due: ${dateFormatted}${isOverdue ? ' <span class="overdue">(Overdue)</span>' : ''}</p>
-    <p>${task.description}</p>
-    <div class="task-actions">
+        </div>
+        <h3>${task.title}</h3>
+        <p>Due: ${dateFormatted}${isOverdue ? ' <span class="overdue">(Overdue)</span>' : ''}</p>
+        <p>${task.description}</p>
+        <div class="task-actions">
         <button class="btn ${markCompleteClass}" onclick="markComplete(${originalIndex})">${markCompleteText}</button>
         <button class="btn ${startTaskClass}" style="background-color: ${task.status === 'In Progress' ? '#cccccc' : 'transparent'}; color: ${task.status === 'In Progress' ? '#666666' : '#547792'}; border: 1px solid ${task.status === 'In Progress' ? '#cccccc' : '#547792'};" onclick="startTask(${originalIndex})">${startTaskText}</button>
-    </div>
-`;
+        </div>
+        `;
 
                 // Add the View Task button separately
                 const viewTaskBtn = createViewTaskButton(task, dateFormatted);
@@ -1683,6 +1707,13 @@
                 document.querySelector('.overdue-stat').style.color = 'inherit';
                 document.querySelector('.overdue-stat').style.fontWeight = 'normal';
             }
+        }
+
+        // Reset the user data function - for testing purposes
+        function resetUserData() {
+            localStorage.removeItem('hasVisitedTasksPage');
+            localStorage.removeItem('tasks');
+            location.reload();
         }
     </script>
 </body>
