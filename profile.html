@@ -352,35 +352,6 @@
       margin-right: 4px;
     }
 
-    .logbook {
-      margin-top: 40px;
-    }
-
-    .logbook-header {
-      font-weight: bold;
-      font-size: 1.2rem;
-      color: #333;
-      margin-bottom: 12px;
-    }
-
-    .logbook-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .logbook-table th,
-    .logbook-table td {
-      border: 1px solid #ddd;
-      padding: 12px;
-      text-align: left;
-      font-size: 1rem;
-    }
-
-    .logbook-table th {
-      background-color: #f0f2f5;
-      font-weight: bold;
-    }
-
     .status {
       padding: 0.3rem 0.75rem;
       border-radius: 20px;
@@ -575,27 +546,6 @@
     
     <button class="save-btn" onclick="saveChanges()">Save Changes</button>
 
-    <div class="logbook">
-      <p class="logbook-header">Logbook Entries</p>
-      <table class="logbook-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Activity</th>
-            <th>Hours</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="logbookEntries">
-          <!-- This will be populated from Firebase -->
-          <tr>
-            <td colspan="4" style="text-align: center;">Loading logbook entries...</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    
-    <a href="dashboard.html" class="back-button">Back to Dashboard</a>
   </div>
 
   <!-- Firebase App (the core Firebase SDK) -->
@@ -670,8 +620,6 @@
         // Load user data
         loadUserData();
         
-        // Load logbook entries
-        loadLogbookEntries();
       } else {
         // Redirect to login if not authenticated
         console.log("No user is signed in");
@@ -740,33 +688,90 @@
           populateProfileDetails(userData);
           populateEditForm(userData);
         });
+
+          db.collection('users').doc(currentUser.uid).get()
+          .then((doc) => {
+            // Hide loading indicator
+            document.getElementById('loader').style.display = 'none';
+            
+            if (doc.exists) {
+              userData = doc.data();
+              console.log("User data retrieved:", userData);
+              
+              // Populate profile details
+              populateProfileDetails(userData);
+              
+              // Populate edit form
+              populateEditForm(userData);
+              
+              // Check for profile image
+              loadProfileImage();
+              
+              // NEW LINE: Update the completed hours display
+              updateCompletedHours();
+            } else {
+              // Existing code...
+            }
+          })
+          .catch((error) => {
+            // Existing code...
+          });
+    }
+
+    function updateCompletedHours() {
+      const completedHoursDisplay = document.getElementById('completedHoursDisplay');
+      if (!completedHoursDisplay) return;
+      
+      // Get logs from localStorage - same approach as dashboard
+      const logs = JSON.parse(localStorage.getItem('activityLogs') || '[]');
+      
+      // Initialize totalHours to 0
+      let totalHours = 0;
+      
+      // Only calculate hours if there are valid logs
+      if (logs.length > 0) {
+        // Calculate total hours (excluding rejected logs)
+        logs.forEach(log => {
+          if (log.status !== 'rejected') {
+            totalHours += parseFloat(log.hours) || 0; // Use 0 if parsing fails
+          }
+        });
+      }
+      
+      // Round total hours to nearest whole number
+      totalHours = Math.round(totalHours);
+      
+      // Update the completed hours display
+      completedHoursDisplay.textContent = totalHours.toString();
     }
 
     // Load profile image from storage if it exists
     function loadProfileImage() {
-      const profileImageDisplay = document.getElementById('profileImageDisplay');
-      const defaultImage = 'images/default-profile.png';
+      // Get the profile image element
+      const profileImg = document.getElementById('profileImg');
+      if (!profileImg) {
+        console.error("Profile image element not found");
+        return;
+      }
       
-      // Get reference to the user's profile image
-      const storageRef = storage.ref();
-      const profileImgRef = storageRef.child(`profileImages/${currentUser.uid}`);
+      // Set default image
+      const defaultImage = '/api/placeholder/180/180';
       
-      profileImgRef.getDownloadURL()
-        .then((url) => {
-          // Image exists, display it
-          profileImageDisplay.src = url;
-          document.getElementById('profileImg').src = url;
-        })
-        .catch((error) => {
-          // Image doesn't exist or error occurred, use default
-          if (error.code === 'storage/object-not-found') {
-            // This is fine, just use the default image
-            console.log("No profile image found, using default");
-            profileImageDisplay.src = defaultImage;
-          } else {
-            console.error("Error loading profile image:", error);
-          }
-        });
+      // Try to get image from local storage
+      try {
+        const storedImageData = localStorage.getItem(`profileImage_${currentUser.uid}`);
+        
+        if (storedImageData) {
+          console.log("Profile image loaded from local storage");
+          profileImg.src = storedImageData;
+        } else {
+          console.log("No profile image in local storage, using default");
+          profileImg.src = defaultImage;
+        }
+      } catch (error) {
+        console.error("Error loading profile image from local storage:", error);
+        profileImg.src = defaultImage;
+      }
     }
 
     // Populate profile details with safe data access
@@ -860,64 +865,6 @@
       }
     }
 
-    // Load logbook entries
-    function loadLogbookEntries() {
-      const logbookBody = document.getElementById('logbookEntries');
-      if (!logbookBody) {
-        console.warn("Logbook entries table not found in the document");
-        return;
-      }
-      
-      let totalHours = 0;
-      
-      db.collection('logbook')
-        .where('userId', '==', currentUser.uid)
-        .orderBy('date', 'desc')
-        .get()
-        .then((querySnapshot) => {
-          if (querySnapshot.empty) {
-            logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No logbook entries yet</td></tr>';
-          } else {
-            let entriesHtml = '';
-            
-            querySnapshot.forEach((doc) => {
-              const entry = doc.data();
-              const status = entry.status || 'Pending';
-              const statusClass = status.toLowerCase() === 'approved' ? 'approved' : '';
-              const hours = parseFloat(entry.hours) || 0;
-              
-              // Add to total if approved
-              if (status.toLowerCase() === 'approved') {
-                totalHours += hours;
-              }
-              
-              entriesHtml += `
-                <tr>
-                  <td>${entry.date}</td>
-                  <td>${entry.activity || 'No description'}</td>
-                  <td>${hours}</td>
-                  <td><span class="status ${statusClass}">${status}</span></td>
-                </tr>
-              `;
-            });
-            
-            logbookBody.innerHTML = entriesHtml;
-            
-            // Update completed hours
-            const completedHoursDisplay = document.getElementById('completedHoursDisplay');
-            if (completedHoursDisplay) {
-              completedHoursDisplay.textContent = totalHours.toFixed(1);
-            }
-          }
-        })
-        .catch((error) => {
-          console.error("Error loading logbook entries:", error);
-          if (logbookBody) {
-            logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Failed to load logbook entries</td></tr>';
-          }
-        });
-    }
-
     // Toggle between view and edit modes
     function toggleEdit() {
       // Check which UI structure we're using
@@ -961,9 +908,9 @@
       const file = event.target.files[0];
       if (!file) return;
       
-      // File size validation (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        showNotification('Image too large. Please select an image under 5MB.', 'error');
+      // File size validation (max 2MB for local storage)
+      if (file.size > 2 * 1024 * 1024) {
+        showNotification('Image too large. Please select an image under 2MB for local storage.', 'error');
         return;
       }
       
@@ -973,29 +920,37 @@
         return;
       }
       
-      // Update image preview
+      showNotification('Processing image...', 'success');
+      
+      // Use FileReader to convert to data URL for storage
       const reader = new FileReader();
       reader.onload = function(e) {
-        const profileImg = document.getElementById('profileImg');
-        const profileImageDisplay = document.getElementById('profileImageDisplay');
-        
-        if (profileImg) profileImg.src = e.target.result;
-        if (profileImageDisplay) profileImageDisplay.src = e.target.result;
-      }
+        try {
+          // Store in local storage
+          localStorage.setItem(`profileImage_${currentUser.uid}`, e.target.result);
+          
+          // Update display
+          const profileImg = document.getElementById('profileImg');
+          if (profileImg) profileImg.src = e.target.result;
+          
+          // Update user preference in Firestore (optional, just records they have an image)
+          db.collection('users').doc(currentUser.uid).update({
+            hasProfileImage: true,
+            profileImageLastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+          }).catch(err => console.log("Note: Failed to update profile image flag in database", err));
+          
+          showNotification('Profile picture updated successfully!', 'success');
+        } catch (error) {
+          console.error("Error saving to local storage:", error);
+          showNotification('Failed to save profile picture. The image might be too large for local storage.', 'error');
+        }
+      };
+      
+      reader.onerror = function() {
+        showNotification('Failed to process the image.', 'error');
+      };
+      
       reader.readAsDataURL(file);
-      
-      // Upload to Firebase Storage
-      const storageRef = storage.ref();
-      const profileImgRef = storageRef.child(`profileImages/${currentUser.uid}`);
-      
-      showNotification('Uploading profile picture...', 'success');
-      
-      profileImgRef.put(file).then(() => {
-        showNotification('Profile picture updated successfully!', 'success');
-      }).catch((error) => {
-        console.error("Error uploading image:", error);
-        showNotification('Failed to upload profile picture. Please try again.', 'error');
-      });
     }
 
     // Save profile changes
@@ -1108,6 +1063,8 @@
       
       // Set up event listeners for buttons based on their existence
       setupVerifyEmailButton();
+
+      updateCompletedHours();
       
       // Handle edit profile buttons (check both possible button IDs)
       const editProfileBtn = document.getElementById('editProfileBtn');
