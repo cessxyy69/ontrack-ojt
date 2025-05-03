@@ -447,14 +447,21 @@ header {
 .activity-header {
   width: 100%;
   max-width: 800px;
-  margin: 0 auto 1rem auto;
+  margin: 0 0 1rem 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0;
+  text-align: left;
 }
 
-.activity-header h2,
+.activity-header h2
+{
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  text-align: left;
+}
+
 .task-header h2,
 .quick-title {
   font-size: 1.2rem;
@@ -612,9 +619,9 @@ header {
 .activities-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem auto;
+  margin: 1rem 0; /* Change from auto to 0 */
   background-color: white;
-  max-width: 800px;
+  max-width: 100%; /* Change from fixed width to 100% */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -948,11 +955,13 @@ header {
     margin-top: 30px;
   }
 
-  .recent-activities {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
+.recent-activities {
+  /* Remove text-align: center; */
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Changed from center to flex-start */
+}
   .upcoming-tasks {
     grid-column: 1;
     grid-row: 2;
