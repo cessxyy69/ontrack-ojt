@@ -57,6 +57,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const successPopup = document.getElementById('successPopup');
     const activityLogForm = document.getElementById('activityLogForm');
     const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+    
+    // Check localStorage for user's full name (for offline access)
+    const storedFullName = localStorage.getItem('userFullName');
+    if (storedFullName) {
+        const userFullNameElement = document.getElementById('userFullName');
+        if (userFullNameElement) {
+            userFullNameElement.textContent = storedFullName;
+        }
+    }
 
     // Function to load user data from Firebase
     function loadUserData() {
@@ -68,6 +77,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 db.collection('users').doc(user.uid).get().then((doc) => {
                     if (doc.exists) {
                         userData = doc.data();
+                        
+                        // Update user's full name in the welcome message
+                        const userFullNameElement = document.getElementById('userFullName');
+                        if (userFullNameElement && userData.fullName) {
+                            userFullNameElement.textContent = userData.fullName;
+                            // Save to localStorage for offline access
+                            localStorage.setItem('userFullName', userData.fullName);
+                        }
                         
                         // Set required hours from user data
                         const requiredHours = userData.requiredHours || 0;
@@ -289,7 +306,7 @@ document.addEventListener('DOMContentLoaded', function () {
         logFormOverlay.style.display = 'none';
         overlayBackground.style.display = 'none';
         activityLogForm.reset(); // Reset form fields
-        window.location.href = 'timelogs.html'; // Redirect to timelogs page
+        // Remove the redirection to timelogs.html
     }
 
     // Event listeners
