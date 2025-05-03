@@ -22,11 +22,11 @@ const signOutBtn = document.getElementById('signOutBtn');
       signOutBtn.addEventListener('click', function() {
         if (window.firebase && firebase.auth) {
           firebase.auth().signOut().then(() => {
-            window.location.href = "landing-page.html";
+            window.location.href = "index.html";
           });
         } else {
           // fallback: just redirect
-          window.location.href = "landing-page.html";
+          window.location.href = "index.html";
         }
       });
     } // end
