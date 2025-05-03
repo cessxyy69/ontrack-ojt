@@ -1,0 +1,1690 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasks | OnTrack</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc;
+        }
+
+
+        
+        header {
+            background-color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            width: 150px;
+            height: 50px;
+        }
+
+        .hamburger {
+            font-size: 26px;
+            cursor: pointer;
+        }
+
+        #sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+            padding-top: 60px;
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+        }
+
+        #sidebar ul {
+            list-style: none;
+        }
+
+        #sidebar ul li {
+            padding: 10px 20px;
+        }
+
+        #sidebar ul li a {
+            text-decoration: none;
+            color: #333;
+            display: block;
+            transition: 0.3s;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #sidebar ul li a:hover {
+            background-color: #547792;
+            color: white;
+            font-weight: bold;
+        }
+
+        #sidebar ul li.active a {
+            background-color: #547792;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+
+        #sidebar.active {
+            right: 0;
+        }
+
+        .menu-icon {
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        #sidebar .close-icon {
+            position: absolute;
+            top: 27px;
+            right: 20px;
+            font-size: 30px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .menu-icon-img {
+            width: 30px;
+            height: 30px;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        .sign-out-container {
+            padding: 10px;
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .signout-btn {
+            background-color: #ECEFCA;
+            color: #000000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: calc(100% - 20px);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .signout-btn:hover {
+            background-color: #547792;
+            color: white;
+            font-weight: bold;
+        }
+
+        .signout-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+
+        .container {
+            padding: 1rem;
+            max-width: 1170px;
+            margin: auto;
+        }
+
+        .task-header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .task-header-left {
+            flex: 1;
+        }
+
+        .task-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .task-subheader {
+            color: #555;
+        }
+
+        /* Updated stats grid styling */
+        .task-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .task-stats div {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #DBDBDB;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .overdue-stat {
+            color: #ef4444;
+        }
+
+        .filtered-results {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #DBDBDB;
+            font-weight: 600;
+        }
+
+        .filtered-results .stat-label {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .filtered-results .stat-value {
+            display: inline-block;
+        }
+
+        .task-card {
+            background: white;
+            padding: 16px;
+            border: 1px solid #f43f5e;
+            border-radius: 8px;
+            margin-top: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #DBDBDB;
+        }
+
+        .task-card .tags {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .tag {
+            background: #e0e7ff;
+            padding: 8px;
+            border-radius: 16px;
+            font-size: 12px;
+        }
+
+        .overdue {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .filter-section {
+            margin-top: 32px;
+            margin-bottom: 32px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #DBDBDB;
+        }
+
+        .filter-section label,
+        .filter-section select,
+        .filter-section input {
+            display: block;
+            width: 100%;
+            margin: 0;
+            padding: 16px;
+        }
+
+        .filter-actions {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 16px;
+        }
+
+        .clear-filter-btn {
+            padding: 10px;
+            background: transparent;
+            color: #547792;
+            border: 1px solid #547792;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .overlay.active {
+            display: flex;
+        }
+
+        .add-task-form {
+            background: white;
+            padding: 32px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .add-task-form input,
+        .add-task-form textarea,
+        .add-task-form select,
+        .add-task-form button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn {
+            padding: 10px;
+            background: #547792;
+            color: white;
+            border: 1px solid #DBDBDB;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Added disabled button styling */
+        .btn.disabled {
+            background: #cccccc;
+            color: #666666;
+            opacity: 0.7;
+        }
+
+        .btn.truly-disabled {
+            cursor: not-allowed;
+        }
+
+        .btn.toggleable {
+            cursor: pointer;
+        }
+
+        .task-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .view-btn {
+            background-color: transparent;
+            color: #000000;
+            border: none;
+        }
+
+        #taskDetailsOverlay .overlay-content {
+            background: white;
+            padding: 32px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .task-card {
+            position: relative;
+            /* Add for dropdown positioning */
+        }
+
+        .more-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 36px;
+            right: 8px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .dropdown button {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            text-align: left;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .dropdown button:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Subtasks styling */
+        .subtasks-section {
+            margin-top: 24px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+
+        .subtasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .subtask-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .subtask-item.completed {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .subtask-item input[type="checkbox"] {
+            margin-right: 12px;
+        }
+
+        .subtask-text {
+            flex-grow: 1;
+        }
+
+        .add-subtask-btn {
+            color: #2563eb;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .add-subtask-input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .subtask-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .save-subtask-btn {
+            padding: 6px 12px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-subtask-btn {
+            padding: 6px 12px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* Attachments styling */
+        .attachments-section {
+            margin-top: 24px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+
+        .attachments-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .upload-btn {
+            color: #2563eb;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .attachment-name {
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 12px;
+        }
+
+        .attachment-preview {
+            max-width: 100%;
+            max-height: 120px;
+            margin-top: 8px;
+            border-radius: 4px;
+        }
+
+        .attachment-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        /* Add to your existing CSS */
+        .attachment-info {
+            flex-grow: 1;
+            padding: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .attachment-info:hover {
+            background-color: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .delete-attachment-btn {
+            color: #dc2626;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .delete-attachment-btn:hover {
+            background-color: #fee2e2;
+        }
+
+        .view-attachment-btn {
+            color: #2563eb;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .file-preview-content {
+            max-width: 800px;
+            max-height: 80vh;
+            overflow: auto;
+        }
+
+        #filePreviewContainer {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        .file-preview-message {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        .file-preview-image {
+            max-width: 100%;
+            max-height: 60vh;
+        }
+
+        .file-download-btn {
+            display: block;
+            margin: 16px auto;
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .file-preview-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .file-preview-page.active {
+            display: flex;
+        }
+
+        .file-preview-container {
+            background-color: white;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .file-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .close-preview-btn {
+            background-color: transparent;
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        #filePreviewContainer {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+
+        .file-preview-image {
+            max-width: 100%;
+            max-height: 70vh;
+            object-fit: contain;
+        }
+
+        .file-preview-message {
+            text-align: center;
+            color: #666;
+            padding: 30px;
+        }
+
+        .file-download-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .task-header {
+                font-size: 1.25rem;
+            }
+
+            .task-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <img src="ontrack-logo.png" alt="Logo" class="logo">
+
+        <button id="openSidebar" class="menu-icon">&#9776;</button> <!-- hamburger -->
+    </header>
+
+    <nav id="sidebar">
+        <button id="closeSidebar" class="close-icon">&times;</button>
+        <ul>
+            <li>
+                <a href="dashboard.html">
+                    <img src="dashboard.png" alt="Dashboard Icon" class="menu-icon-img"> Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="timelogs.html">
+                    <img src="time-logs.png" alt="Time Logs Icon" class="menu-icon-img"> Time Logs
+                </a>
+            </li>
+            <li class="active">
+                <a href="tasks.html">
+                    <img src="tasks.png" alt="Tasks Icon" class="menu-icon-img"> Tasks
+                </a>
+            </li>
+            <li>
+                <a href="reports.html">
+                    <img src="reports.png" alt="Reports Icon" class="menu-icon-img"> Reports
+                </a>
+            </li>
+            <li>
+                <a href="profile.html">
+                    <img src="profile.png" alt="Profile Icon" class="menu-icon-img"> Profile
+                </a>
+            </li>
+        </ul>
+
+        <div class="sign-out-container">
+            <button id="signOutBtn" class="signout-btn">
+                <img src="sign-out.png" alt="Sign Out Icon" class="signout-icon">
+                Sign Out
+            </button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="task-header-container">
+            <div class="task-header-left">
+                <div class="task-header">Tasks</div>
+                <div class="task-subheader">Manage your OJT tasks and deadlines</div>
+            </div>
+            <button class="btn" onclick="openForm()">+ New Task</button>
+        </div>
+
+        <div class="filter-section">
+            <input type="text" id="searchInput" placeholder="Search by title or description..."
+                oninput="applyFilters()">
+            <label>Status</label>
+            <select id="statusFilter" onchange="applyFilters()">
+                <option value="All">All Statuses</option>
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+            </select>
+            <label>Priority</label>
+            <select id="priorityFilter" onchange="applyFilters()">
+                <option value="All">All Priorities</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <label>Sort By</label>
+            <select id="sortBy" onchange="applyFilters()">
+                <option value="dueDate">Due Date</option>
+                <option value="priority">Priority</option>
+                <option value="title">Title</option>
+                <option value="status">Status</option>
+            </select>
+            <div class="filter-actions">
+                <button class="clear-filter-btn" onclick="clearFilters()">Clear Filters</button>
+            </div>
+        </div>
+
+        <!-- Updated task stats structure -->
+        <div class="task-stats">
+            <div>
+                <span class="stat-label">Total Tasks</span>
+                <span class="stat-value" id="total-count">0</span>
+            </div>
+            <div>
+                <span class="stat-label">Completed</span>
+                <span class="stat-value" id="completed-count">0</span>
+            </div>
+            <div>
+                <span class="stat-label">In Progress</span>
+                <span class="stat-value" id="progress-count">0</span>
+            </div>
+            <div class="overdue-stat">
+                <span class="stat-label">Overdue</span>
+                <span class="stat-value" id="overdue-count">0</span>
+            </div>
+        </div>
+
+        <!-- Moved filtered results outside of the grid -->
+        <div class="filtered-results">
+            <span class="stat-label">Filtered Results:</span>
+            <span class="stat-value" id="filtered-count">0</span>
+        </div>
+
+        <!-- Task cards will be rendered here -->
+        <div id="task-list"></div>
+    </div>
+
+    <div class="overlay" id="overlay">
+        <form class="add-task-form" onsubmit="addTask(event)">
+            <h2 id="formTitle">Add New Task</h2>
+            <input type="text" id="taskTitle" placeholder="Title" required>
+            <textarea id="taskDescription" placeholder="Description" required></textarea>
+            <input type="date" id="taskDueDate" required>
+            <select id="taskPriority" required>
+                <option value="">Select Priority</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+            </select>
+            <button class="btn" id="submitBtn" type="submit">Add Task</button>
+            <button type="button" onclick="closeForm()">Cancel</button>
+        </form>
+    </div>
+
+    <div class="overlay" id="taskDetailsOverlay">
+        <div class="overlay-content">
+            <span class="close-btn" onclick="closeTaskDetails()">&times;</span>
+            <h2 id="detailTitle"></h2>
+            <p><strong>Priority:</strong> <span id="detailPriority"></span></p>
+            <p><strong>Status:</strong> <span id="detailStatus"></span></p>
+            <p><strong>Due Date:</strong> <span id="detailDueDate"></span></p>
+            <p><strong>Description:</strong> <span id="detailDescription"></span></p>
+
+            <!-- Subtasks Section -->
+            <div class="subtasks-section">
+                <div class="subtasks-header">
+                    <h3>Subtasks</h3>
+                    <button class="add-subtask-btn" id="addSubtaskBtn" onclick="showAddSubtaskForm()">+ Add
+                        subtask</button>
+                </div>
+
+                <div id="subtasks-container">
+                    <!-- Subtasks will be rendered here -->
+                </div>
+
+                <div id="add-subtask-form" style="display: none; margin-top: 16px;">
+                    <input type="text" class="add-subtask-input" id="subtaskText" placeholder="Enter subtask...">
+                    <div class="subtask-actions">
+                        <button class="save-subtask-btn" onclick="addSubtask()">Save</button>
+                        <button class="cancel-subtask-btn" onclick="hideAddSubtaskForm()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attachments Section -->
+            <div class="attachments-section">
+                <div class="attachments-header">
+                    <h3>Attachments</h3>
+                    <label for="fileUpload" class="upload-btn">+ Add attachment</label>
+                    <input type="file" id="fileUpload" style="display: none;" onchange="handleFileUpload(event)">
+                </div>
+
+                <div id="attachments-container">
+                    <!-- Attachments will be rendered here -->
+                </div>
+            </div>
+
+            <div class="buttons-container" style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn" id="detailCompleteBtn" onclick="markCompleteFromDetails()" style="flex: 1;">Mark
+                    Complete</button>
+                <button class="btn" id="detailStartBtn" onclick="startTaskFromDetails()" style="flex: 1;">Start
+                    Task</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="file-preview-page" id="filePreviewPage">
+        <div class="file-preview-container">
+            <div class="file-preview-header">
+                <h2 id="filePreviewName"></h2>
+                <button class="close-preview-btn" onclick="closeFilePreview()">&times;</button>
+            </div>
+            <div id="filePreviewContainer"></div>
+        </div>
+    </div>
+
+    <script>
+
+        /* START JS FOR SIDEBAR */
+        const openSidebarBtn = document.getElementById('openSidebar');
+        const closeSidebarBtn = document.getElementById('closeSidebar');
+        const sidebar = document.querySelector('#sidebar');
+
+        openSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.add('active');
+            openSidebarBtn.style.display = 'none';
+            closeSidebarBtn.style.display = 'inline-block';
+        });
+
+        closeSidebarBtn.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            openSidebarBtn.style.display = 'inline-block';
+            closeSidebarBtn.style.display = 'none';
+        });
+        /* END JS FOR SIDEBAR */
+
+        //sign out galing kay chester
+        const signOutBtn = document.getElementById('signOutBtn');
+        if (signOutBtn) {
+          signOutBtn.addEventListener('click', function() {
+            if (window.firebase && firebase.auth) {
+              firebase.auth().signOut().then(() => {
+                window.location.href = "landing-page.html";
+              });
+            } else {
+              // fallback: just redirect
+              window.location.href = "landing-page.html";
+            }
+          });
+        } // end
+
+        let tasks = [];
+        let isEditing = false;
+        let editingTaskIndex = null;
+        let currentlyViewedTask = null;
+
+        window.onload = () => {
+            loadTasks();
+            renderTasks();
+            updateStats();
+        };
+
+        function loadTasks() {
+            const saved = localStorage.getItem('tasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+
+                // Ensure all tasks have subtasks and attachments arrays
+                tasks.forEach(task => {
+                    if (!task.subtasks) {
+                        task.subtasks = [];
+                    }
+                    if (!task.attachments) {
+                        task.attachments = [];
+                    }
+                });
+            }
+        }
+
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        function openForm() {
+            document.getElementById('overlay').classList.add('active');
+        }
+
+        function closeForm() {
+            const form = document.querySelector('.add-task-form');
+            form.reset();
+            document.getElementById('formTitle').textContent = 'Add New Task';
+            document.getElementById('submitBtn').textContent = 'Add Task';
+            isEditing = false;
+            editingTaskIndex = null;
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function showAddSubtaskForm() {
+            document.getElementById('add-subtask-form').style.display = 'block';
+            document.getElementById('addSubtaskBtn').style.display = 'none';
+            document.getElementById('subtaskText').focus();
+        }
+
+        function hideAddSubtaskForm() {
+            document.getElementById('add-subtask-form').style.display = 'none';
+            document.getElementById('addSubtaskBtn').style.display = 'block';
+            document.getElementById('subtaskText').value = '';
+        }
+
+        function addSubtask() {
+            const subtaskText = document.getElementById('subtaskText').value.trim();
+
+            if (subtaskText && currentlyViewedTask) {
+                // Initialize subtasks array if it doesn't exist
+                if (!currentlyViewedTask.subtasks) {
+                    currentlyViewedTask.subtasks = [];
+                }
+
+                // Add the new subtask
+                currentlyViewedTask.subtasks.push({
+                    text: subtaskText,
+                    completed: false,
+                    id: Date.now() // Generate a unique ID
+                });
+
+                saveTasks();
+                renderSubtasks();
+                hideAddSubtaskForm();
+            }
+        }
+
+        function toggleSubtask(subtaskId) {
+            if (currentlyViewedTask && currentlyViewedTask.subtasks) {
+                const subtask = currentlyViewedTask.subtasks.find(st => st.id === subtaskId);
+                if (subtask) {
+                    subtask.completed = !subtask.completed;
+                    saveTasks();
+                    renderSubtasks();
+                }
+            }
+        }
+
+        function renderSubtasks() {
+            const container = document.getElementById('subtasks-container');
+            container.innerHTML = '';
+
+            if (currentlyViewedTask && currentlyViewedTask.subtasks && currentlyViewedTask.subtasks.length > 0) {
+                currentlyViewedTask.subtasks.forEach(subtask => {
+                    const subtaskItem = document.createElement('div');
+                    subtaskItem.className = `subtask-item ${subtask.completed ? 'completed' : ''}`;
+
+                    subtaskItem.innerHTML = `
+            <input type="checkbox" ${subtask.completed ? 'checked' : ''} onchange="toggleSubtask(${subtask.id})">
+            <span class="subtask-text">${subtask.text}</span>
+          `;
+
+                    container.appendChild(subtaskItem);
+                });
+            } else {
+                container.innerHTML = '<p>No subtasks yet.</p>';
+            }
+        }
+
+        function openTaskDetails(title, priority, status, due, desc) {
+            const overlay = document.getElementById('taskDetailsOverlay');
+
+            document.getElementById('detailTitle').textContent = title;
+            document.getElementById('detailPriority').textContent = priority;
+            document.getElementById('detailStatus').textContent = status;
+            document.getElementById('detailDueDate').textContent = due;
+            document.getElementById('detailDescription').textContent = desc;
+
+            currentlyViewedTask = tasks.find(t => t.title === title);
+
+            // Update both Start Task and Mark Complete buttons
+            const startBtn = document.getElementById('detailStartBtn');
+            const completeBtn = document.getElementById('detailCompleteBtn');
+
+            if (currentlyViewedTask.status === 'Completed') {
+                completeBtn.textContent = 'Mark Incomplete';
+                completeBtn.classList.add('disabled', 'toggleable');
+                startBtn.style.display = 'none'; // Hide Start Task button
+            } else {
+                completeBtn.textContent = 'Mark Complete';
+                completeBtn.classList.remove('disabled', 'toggleable');
+                startBtn.style.display = 'inline-block';
+
+                if (currentlyViewedTask.status === 'In Progress') {
+                    startBtn.textContent = 'In Progress';
+                    startBtn.style.backgroundColor = '#cccccc';
+                    startBtn.style.color = '#666666';
+                    startBtn.style.border = '1px solid #cccccc';
+                } else {
+                    startBtn.textContent = 'Start Task';
+                    startBtn.style.backgroundColor = 'transparent';
+                    startBtn.style.color = '#547792';
+                    startBtn.style.border = '1px solid #547792';
+                }
+            }
+
+            renderSubtasks();
+            renderAttachments();
+            hideAddSubtaskForm();
+            overlay.classList.add('active');
+        }
+
+        function startTaskFromDetails() {
+            if (currentlyViewedTask) {
+                // Skip if the task is already completed
+                if (currentlyViewedTask.status === 'Completed') {
+                    return;
+                }
+
+                // Toggle between in progress and pending
+                if (currentlyViewedTask.status === 'In Progress') {
+                    currentlyViewedTask.status = 'Pending';
+                    document.getElementById('detailStartBtn').textContent = 'Start Task';
+                    document.getElementById('detailStartBtn').style.backgroundColor = 'transparent';
+                    document.getElementById('detailStartBtn').style.color = '#547792';
+                    document.getElementById('detailStartBtn').style.border = '1px solid #547792';
+                } else {
+                    currentlyViewedTask.status = 'In Progress';
+                    document.getElementById('detailStartBtn').textContent = 'In Progress';
+                    document.getElementById('detailStartBtn').style.backgroundColor = '#cccccc';
+                    document.getElementById('detailStartBtn').style.color = '#666666';
+                    document.getElementById('detailStartBtn').style.border = '1px solid #cccccc';
+                }
+
+                // Update the status display
+                document.getElementById('detailStatus').textContent = currentlyViewedTask.status;
+
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        function closeTaskDetails() {
+            document.getElementById('taskDetailsOverlay').classList.remove('active');
+            currentlyViewedTask = null;
+        }
+
+        function markCompleteFromDetails() {
+            if (currentlyViewedTask) {
+                const startBtn = document.getElementById('detailStartBtn');
+                const completeBtn = document.getElementById('detailCompleteBtn');
+
+                if (currentlyViewedTask.status === 'Completed') {
+                    // Toggle back to previous state
+                    currentlyViewedTask.status = 'Pending';
+                    completeBtn.textContent = 'Mark Complete';
+                    document.getElementById('detailStatus').textContent = 'Pending';
+                    completeBtn.classList.remove('disabled', 'toggleable');
+
+                    // Re-enable Start Task button
+                    startBtn.style.display = 'inline-block';
+                    startBtn.classList.remove('disabled', 'truly-disabled');
+                    startBtn.style.backgroundColor = 'transparent';
+                    startBtn.style.color = '#547792';
+                    startBtn.style.border = '1px solid #547792';
+                    startBtn.style.cursor = 'pointer';
+                    startBtn.textContent = 'Start Task';
+                } else {
+                    currentlyViewedTask.status = 'Completed';
+                    completeBtn.textContent = 'Mark Incomplete';
+                    document.getElementById('detailStatus').textContent = 'Completed';
+                    completeBtn.classList.add('disabled', 'toggleable');
+
+                    // Disable Start Task button
+                    startBtn.style.display = 'inline-block';
+                    startBtn.classList.add('disabled', 'truly-disabled');
+                    startBtn.style.backgroundColor = '#cccccc';
+                    startBtn.style.color = '#666666';
+                    startBtn.style.border = '1px solid #cccccc';
+                    startBtn.style.cursor = 'not-allowed';
+                    startBtn.textContent = 'Start Task';
+                }
+
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+        }
+
+        function addTask(event) {
+            event.preventDefault();
+
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const dueDate = document.getElementById('taskDueDate').value;
+            const priority = document.getElementById('taskPriority').value;
+
+            // Check if task already exists (for editing)
+            const duplicateTask = tasks.find(t =>
+                t.title === title &&
+                !isEditing // Only check for duplicates if not in edit mode
+            );
+
+            if (duplicateTask) {
+                alert(`A task with the title "${title}" already exists. Please use a different title.`);
+                return;
+            }
+
+            const newTask = {
+                title,
+                description,
+                dueDate,
+                priority,
+                status: 'Pending', // Default status
+                createdAt: new Date().toISOString(), // Add creation timestamp
+                subtasks: [], // Initialize empty subtasks array
+                attachments: []
+            };
+
+            if (isEditing && editingTaskIndex !== null) {
+                // Preserve existing subtasks when editing
+                if (tasks[editingTaskIndex].subtasks) {
+                    newTask.subtasks = tasks[editingTaskIndex].subtasks;
+                }
+                // Replace the existing task with the updated one
+                tasks[editingTaskIndex] = newTask;
+            } else {
+                // Add a new task
+                tasks.push(newTask);
+            }
+
+            saveTasks();
+            closeForm();
+            renderTasks();
+            updateStats();
+        }
+
+        function clearFilters() {
+            // Reset all filter inputs to their default values
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = 'All';
+            document.getElementById('priorityFilter').value = 'All';
+            document.getElementById('sortBy').value = 'dueDate';
+
+            // Apply the filters with the reset values
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+
+            // Create a filtered copy of the tasks
+            let filteredTasks = [...tasks];
+
+            // Apply search filter
+            if (searchInput) {
+                filteredTasks = filteredTasks.filter(task =>
+                    task.title.toLowerCase().includes(searchInput) ||
+                    task.description.toLowerCase().includes(searchInput)
+                );
+            }
+
+            // Apply status filter
+            if (statusFilter !== 'All') {
+                filteredTasks = filteredTasks.filter(task => task.status === statusFilter);
+            }
+
+            // Apply priority filter
+            if (priorityFilter !== 'All') {
+                filteredTasks = filteredTasks.filter(task => task.priority === priorityFilter);
+            }
+
+            // Apply sorting
+            filteredTasks.sort((a, b) => {
+                switch (sortBy) {
+                    case 'dueDate':
+                        return new Date(a.dueDate) - new Date(b.dueDate);
+                    case 'priority':
+                        const priorityOrder = { 'High': 1, 'Medium': 2, 'Low': 3 };
+                        return priorityOrder[a.priority] - priorityOrder[b.priority];
+                    case 'title':
+                        return a.title.localeCompare(b.title);
+                    case 'status':
+                        const statusOrder = { 'Pending': 1, 'In Progress': 2, 'Completed': 3 };
+                        return statusOrder[a.status] - statusOrder[b.status];
+                    default:
+                        return 0;
+                }
+            });
+
+            renderTaskList(filteredTasks);
+
+            // Update filtered count
+            document.getElementById('filtered-count').textContent = filteredTasks.length;
+        }
+
+        function renderTaskList(taskArray) {
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = ''; // Clear existing tasks
+
+            if (taskArray.length === 0) {
+                taskList.innerHTML = '<p>No tasks match your current filters. Try adjusting your filters or add a new task.</p>';
+                return;
+            }
+
+            taskArray.forEach((task, index) => {
+                const taskCard = document.createElement('div');
+                taskCard.className = 'task-card';
+
+                // Find the actual index in the original tasks array
+                const originalIndex = tasks.findIndex(t => t.title === task.title && t.dueDate === task.dueDate);
+
+                // Set border color based on status
+                if (task.status === 'Completed') {
+                    taskCard.style.borderColor = '#bbf7d0';
+                } else if (task.status === 'In Progress') {
+                    taskCard.style.borderColor = '#facc15';
+                } else {
+                    taskCard.style.borderColor = '#f43f5e';
+                }
+
+                const dateFormatted = new Date(task.dueDate).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                });
+
+                // Check if task is overdue
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const dueDate = new Date(task.dueDate);
+                const isOverdue = dueDate < today && task.status !== 'Completed';
+
+                // Set tag background color based on status
+                let statusBgColor = '#e0e7ff'; // Default
+                if (task.status === 'Completed') {
+                    statusBgColor = '#bbf7d0';
+                } else if (task.status === 'In Progress') {
+                    statusBgColor = '#facc15';
+                }
+
+                // Determine button states and text based on task status
+                let markCompleteClass = '';
+                let markCompleteText = 'Mark Complete';
+                let startTaskClass = '';
+                let startTaskText = 'Start Task';
+
+                if (task.status === 'Completed') {
+                    markCompleteClass = 'disabled toggleable';
+                    markCompleteText = 'Mark Incomplete';
+                    startTaskClass = 'disabled truly-disabled';
+                } else if (task.status === 'In Progress') {
+                    startTaskClass = 'disabled toggleable';
+                    startTaskText = 'In Progress';
+                }
+
+                // Count subtasks completed
+                let completedSubtasks = 0;
+                let totalSubtasks = 0;
+
+                if (task.subtasks && task.subtasks.length > 0) {
+                    totalSubtasks = task.subtasks.length;
+                    completedSubtasks = task.subtasks.filter(s => s.completed).length;
+                }
+
+                taskCard.innerHTML = `
+          <button class="more-btn" onclick="toggleDropdown(this)">⋮</button>
+    <div class="dropdown">
+        <button onclick="editTask(${originalIndex})">Edit</button>
+        <button onclick="archiveTask(${originalIndex})">Archive</button>
+        <button onclick="deleteTask(${originalIndex})">Delete</button>
+    </div>
+
+    <div class="tags">
+        <span class="tag">${task.priority}</span>
+        <span class="tag" style="background: ${statusBgColor}">${task.status}</span>
+        ${isOverdue ? '<span class="tag overdue" style="background: #fee2e2">Overdue</span>' : ''}
+    </div>
+    <h3>${task.title}</h3>
+    <p>Due: ${dateFormatted}${isOverdue ? ' <span class="overdue">(Overdue)</span>' : ''}</p>
+    <p>${task.description}</p>
+    <div class="task-actions">
+        <button class="btn ${markCompleteClass}" onclick="markComplete(${originalIndex})">${markCompleteText}</button>
+        <button class="btn ${startTaskClass}" style="background-color: ${task.status === 'In Progress' ? '#cccccc' : 'transparent'}; color: ${task.status === 'In Progress' ? '#666666' : '#547792'}; border: 1px solid ${task.status === 'In Progress' ? '#cccccc' : '#547792'};" onclick="startTask(${originalIndex})">${startTaskText}</button>
+    </div>
+`;
+
+                // Add the View Task button separately
+                const viewTaskBtn = createViewTaskButton(task, dateFormatted);
+                taskCard.querySelector('.task-actions').appendChild(viewTaskBtn);
+
+                // Create a safer version of the openTaskDetails button
+                function createViewTaskButton(task, dateFormatted) {
+                    const btn = document.createElement('button');
+                    btn.className = 'btn view-btn';
+                    btn.textContent = 'View Task';
+                    btn.addEventListener('click', () => {
+                        openTaskDetails(
+                            task.title,
+                            task.priority,
+                            task.status,
+                            dateFormatted,
+                            task.description
+                        );
+                    });
+                    return btn;
+                }
+
+                taskList.appendChild(taskCard);
+            });
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file || !currentlyViewedTask) return;
+
+            // Initialize attachments array if it doesn't exist
+            if (!currentlyViewedTask.attachments) {
+                currentlyViewedTask.attachments = [];
+            }
+
+            // Read the file content as a data URL
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                // Add the attachment to the task
+                currentlyViewedTask.attachments.push({
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    data: e.target.result,
+                    id: Date.now() // Generate a unique ID
+                });
+
+                saveTasks();
+                renderAttachments();
+
+                // Reset the file input
+                document.getElementById('fileUpload').value = '';
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function deleteAttachment(attachmentId) {
+            if (currentlyViewedTask && currentlyViewedTask.attachments) {
+                const index = currentlyViewedTask.attachments.findIndex(att => att.id === attachmentId);
+                if (index !== -1) {
+                    if (confirm('Are you sure you want to delete this attachment?')) {
+                        currentlyViewedTask.attachments.splice(index, 1);
+                        saveTasks();
+                        renderAttachments();
+                    }
+                }
+            }
+        }
+
+        function viewAttachment(attachmentId) {
+            if (currentlyViewedTask && currentlyViewedTask.attachments) {
+                const attachment = currentlyViewedTask.attachments.find(att => att.id === attachmentId);
+                if (attachment) {
+                    // Set file name in the preview header
+                    document.getElementById('filePreviewName').textContent = attachment.name;
+
+                    const previewContainer = document.getElementById('filePreviewContainer');
+                    previewContainer.innerHTML = '';
+
+                    if (attachment.type.startsWith('image/')) {
+                        // For images - show the image
+                        const img = document.createElement('img');
+                        img.src = attachment.data;
+                        img.className = 'file-preview-image';
+                        img.alt = attachment.name;
+                        previewContainer.appendChild(img);
+                    } else if (attachment.type === 'application/pdf') {
+                        // For PDFs - embed using an iframe
+                        const iframe = document.createElement('iframe');
+                        iframe.src = attachment.data;
+                        iframe.style.width = '100%';
+                        iframe.style.height = '70vh';
+                        iframe.style.border = 'none';
+                        previewContainer.appendChild(iframe);
+                    } else if (attachment.type.startsWith('text/')) {
+                        // For text files - try to display the content
+                        const pre = document.createElement('pre');
+                        pre.style.whiteSpace = 'pre-wrap';
+                        pre.style.width = '100%';
+                        pre.style.overflowX = 'auto';
+                        pre.textContent = atob(attachment.data.split(',')[1]);
+                        previewContainer.appendChild(pre);
+                    } else {
+                        // For other file types - show a message and download button
+                        previewContainer.innerHTML = `
+              <div class="file-preview-message">
+                <p>Preview not available for this file type (${attachment.type}).</p>
+                <a href="${attachment.data}" download="${attachment.name}" class="file-download-btn">Download File</a>
+              </div>
+            `;
+                    }
+
+                    // Show the file preview page
+                    document.getElementById('filePreviewPage').classList.add('active');
+                }
+            }
+        }
+
+        function closeFilePreview() {
+            document.getElementById('filePreviewPage').classList.remove('active');
+        }
+
+        function renderAttachments() {
+            const container = document.getElementById('attachments-container');
+            container.innerHTML = '';
+
+            if (currentlyViewedTask && currentlyViewedTask.attachments && currentlyViewedTask.attachments.length > 0) {
+                currentlyViewedTask.attachments.forEach(attachment => {
+                    const attachmentItem = document.createElement('div');
+                    attachmentItem.className = 'attachment-item';
+
+                    attachmentItem.innerHTML = `
+                <div class="attachment-info" onclick="viewAttachment(${attachment.id})" style="cursor: pointer;">
+                    <div class="attachment-name">${attachment.name}</div>
+                </div>
+                <div class="attachment-actions">
+                    <button class="delete-attachment-btn" onclick="event.stopPropagation(); deleteAttachment(${attachment.id})">&times;</button>
+                </div>
+            `;
+
+                    container.appendChild(attachmentItem);
+                });
+            } else {
+                container.innerHTML = '<p>No attachments yet.</p>';
+            }
+        }
+
+        function renderTasks() {
+            applyFilters(); // This will call renderTaskList with filtered tasks
+            updateStats();
+        }
+
+        function toggleDropdown(button) {
+            const dropdown = button.nextElementSibling;
+            dropdown.style.display = dropdown.style.display === 'flex' ? 'none' : 'flex';
+
+            // Close other dropdowns
+            document.querySelectorAll('.dropdown').forEach(menu => {
+                if (menu !== dropdown) menu.style.display = 'none';
+            });
+        }
+
+        function editTask(index) {
+            if (index < 0 || index >= tasks.length) return;
+
+            const task = tasks[index];
+            openForm();
+
+            document.getElementById('taskTitle').value = task.title;
+            document.getElementById('taskDescription').value = task.description;
+            document.getElementById('taskDueDate').value = task.dueDate;
+            document.getElementById('taskPriority').value = task.priority;
+
+            document.getElementById('formTitle').textContent = 'Edit Task';
+            document.getElementById('submitBtn').textContent = 'Update Task';
+
+            isEditing = true;
+            editingTaskIndex = index;
+
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+
+        function archiveTask(index) {
+            if (index < 0 || index >= tasks.length) return;
+
+            const title = tasks[index].title;
+            alert(`"${title}" will be moved to Archived (not implemented yet).`);
+            // Placeholder – implement real archiving later
+
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+
+        function deleteTask(index) {
+            if (index < 0 || index >= tasks.length) return;
+
+            const title = tasks[index].title;
+            if (confirm(`Are you sure you want to delete "${title}"?`)) {
+                tasks.splice(index, 1);
+                saveTasks();
+                renderTasks();
+                updateStats();
+            }
+
+            // Close all dropdowns
+            document.querySelectorAll('.dropdown').forEach(menu => {
+                menu.style.display = 'none';
+            });
+        }
+
+        document.addEventListener('click', function (e) {
+            // Close dropdowns if clicking outside
+            if (!e.target.matches('.more-btn')) {
+                document.querySelectorAll('.dropdown').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        function markComplete(index) {
+            if (index < 0 || index >= tasks.length) return;
+
+            // Toggle between completed and previous state
+            if (tasks[index].status === 'Completed') {
+                tasks[index].status = 'Pending'; // Reset to pending
+            } else {
+                tasks[index].status = 'Completed';
+            }
+
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        function startTask(index) {
+            if (index < 0 || index >= tasks.length) return;
+
+            // Skip if the task is already completed
+            if (tasks[index].status === 'Completed') {
+                return;
+            }
+
+            // Toggle between in progress and pending
+            if (tasks[index].status === 'In Progress') {
+                tasks[index].status = 'Pending';
+            } else {
+                tasks[index].status = 'In Progress';
+            }
+
+            saveTasks();
+            renderTasks();
+            updateStats();
+        }
+
+        function updateStats() {
+            // Update task counts
+            document.getElementById('total-count').textContent = tasks.length;
+
+            const completed = tasks.filter(t => t.status === 'Completed').length;
+            document.getElementById('completed-count').textContent = completed;
+
+            const inProgress = tasks.filter(t => t.status === 'In Progress').length;
+            document.getElementById('progress-count').textContent = inProgress;
+
+            const notStarted = tasks.filter(t => t.status === 'Pending').length;
+
+            // Count overdue tasks (due date before today and not completed)
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const overdue = tasks.filter(t => {
+                const dueDate = new Date(t.dueDate);
+                return dueDate < today && t.status !== 'Completed';
+            }).length;
+
+            document.getElementById('overdue-count').textContent = overdue;
+
+            // Update the filtered count - this will be updated whenever filters are applied
+            // Initially set it to the total count
+            if (!document.getElementById('filtered-count').textContent) {
+                document.getElementById('filtered-count').textContent = tasks.length;
+            }
+
+            // Update stats color styling
+            if (overdue > 0) {
+                document.querySelector('.overdue-stat').style.color = '#ef4444';
+                document.querySelector('.overdue-stat').style.fontWeight = 'bold';
+            } else {
+                document.querySelector('.overdue-stat').style.color = 'inherit';
+                document.querySelector('.overdue-stat').style.fontWeight = 'normal';
+            }
+        }
+    </script>
+</body>
+
+</html>

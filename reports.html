@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reports</title>
+    <link rel="stylesheet" href="report-style.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="reports-script.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <img src="ontrack-logo.png" alt="Logo" class="logo" />
+      <button id="openSidebar" class="menu-icon">&#9776;</button>
+      <!-- hamburger -->
+    </header>
+
+    <nav id="sidebar">
+      <button id="closeSidebar" class="close-icon">&times;</button>
+      <ul>
+        <li>
+          <a href="dashboard.html">
+            <img
+              src="dashboard.png"
+              alt="Dashboard Icon"
+              class="menu-icon-img"
+            />
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="timelogs.html">
+            <img
+              src="time-logs.png"
+              alt="Time Logs Icon"
+              class="menu-icon-img"
+            />
+            Time Logs
+          </a>
+        </li>
+        <li>
+          <a href="tasks.html">
+            <img src="tasks.png" alt="Tasks Icon" class="menu-icon-img" /> Tasks
+          </a>
+        </li>
+        <li class="active">
+          <a href="reports.html">
+            <img src="reports.png" alt="Reports Icon" class="menu-icon-img" />
+            Reports
+          </a>
+        </li>
+        <li>
+          <a href="profile.html">
+            <img src="profile.png" alt="Profile Icon" class="menu-icon-img" />
+            Profile
+          </a>
+        </li>
+      </ul>
+
+      <div class="signout-container">
+        <button id="signOutBtn" class="signout-btn">
+          <img src="sign-out.png" alt="Sign Out Icon" class="signout-icon" />
+          Sign Out
+        </button>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- Main Content -->
+      <main class="main-content">
+        <h1>Reports</h1>
+        <p>Generate, manage, and submit your OJT reports</p>
+        <br />
+
+        <!-- Report Type Selection -->
+        <section class="report-section">
+          <div class="report-type-header">
+            <h2>📄 Generate Reports</h2>
+            <p>Select the type of report you want to generate</p>
+          </div>
+
+          <div class="report-type-container">
+            <div class="report-type-card" data-report-type="time-log">
+              <div class="report-type-icon">🕒</div>
+              <div class="report-type-title">Time Log Report</div>
+              <div class="report-type-description">
+                Detailed record of daily activities and hours rendered
+              </div>
+            </div>
+
+            <div class="report-type-card" data-report-type="summary">
+              <div class="report-type-icon">📊</div>
+              <div class="report-type-title">Summary Report</div>
+              <div class="report-type-description">
+                Overview of progress, hours completed, and pending tasks
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Modal for Time Log Report -->
+        <div class="modal" id="time-log-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Generate Time Log Report</h3>
+              <button class="close-modal">&times;</button>
+            </div>
+
+            <form class="modal-form">
+              <div class="form-group">
+                <label for="time-log-start">Start Date</label>
+                <input type="date" id="time-log-start" required />
+              </div>
+
+              <div class="form-group">
+                <label for="time-log-end">End Date</label>
+                <input type="date" id="time-log-end" required />
+              </div>
+
+              <div class="form-group">
+                <label for="time-log-format">Report Format</label>
+                <select id="time-log-format">
+                  <option value="pdf">PDF</option>
+                  <option value="excel">Excel</option>
+                </select>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="cancel-button">Cancel</button>
+                <button type="submit" class="generate-button">
+                  Generate Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal for Summary Report -->
+        <div class="modal" id="summary-modal">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>Generate Summary Report</h3>
+              <button class="close-modal">&times;</button>
+            </div>
+            <form class="modal-form">
+              <div class="form-group" style="text-align: center">
+                <p>Are you sure you want to generate a Summary Report?</p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="cancel-button">Cancel</button>
+                <button type="submit" class="generate-button">
+                  Generate Report
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Report Filtering and Sorting -->
+        <section class="report-section">
+          <h2>My Reports</h2>
+          <div class="report-controls">
+            <div class="filter-group">
+              <select id="filter-type">
+                <option value="all">All Types</option>
+                <option value="Summary">Summary</option>
+                <option value="Time Log">Time Log</option>
+              </select>
+
+              <select id="sort-by">
+                <option value="date-desc">Date (Newest First)</option>
+                <option value="date-asc">Date (Oldest First)</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+              </select>
+
+              <div class="search-box">
+                <input
+                  type="text"
+                  id="search-reports"
+                  placeholder="Search reports..."
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Report Title</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reports-table-body">
+                <tr>
+                  <td colspan="5" class="no-records">
+                    No reports found. Generate a report to get started.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination" id="reports-pagination"></div>
+        </section>
+        <!-- OJT Information Section -->
+        <section class="report-section">
+          <h2>OJT Information</h2>
+          <p>Information that will be included in the report header</p>
+
+          <div class="ojt-info-container">
+            <div class="ojt-info-row">
+              <div class="ojt-info-col">
+                <h3>Student Name</h3>
+                <p>Demo Student</p>
+              </div>
+              <div class="ojt-info-col">
+                <h3>Student ID</h3>
+                <p>2021-12345</p>
+              </div>
+            </div>
+
+            <div class="ojt-info-row">
+              <div class="ojt-info-col">
+                <h3>Course</h3>
+                <p>BS Information Technology</p>
+              </div>
+              <div class="ojt-info-col">
+                <h3>Company</h3>
+                <p>Tech Solutions Inc.</p>
+              </div>
+            </div>
+
+            <div class="ojt-info-row">
+              <div class="ojt-info-col">
+                <h3>Supervisor</h3>
+                <p>John Doe</p>
+              </div>
+              <div class="ojt-info-col">
+                <h3>OJT Period</h3>
+                <p>Jan 15, 2025 - Apr 15, 2025</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ONTRACK Login</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      padding: 40px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      max-width: 120px;
+      height: auto;
+      margin: 0 auto 15px;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #1e293b;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: normal;
+      color: #64748b;
+      margin-bottom: 25px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 45px 12px 15px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: #2e65f3;
+      box-shadow: 0 0 0 3px rgba(46, 101, 243, 0.1);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 15px;
+      top: 38px;
+      font-size: 14px;
+      color: #2e65f3;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin: 0 0 25px;
+      font-size: 14px;
+    }
+
+    .forgot-password a {
+      color: #2e65f3;
+      text-decoration: none;
+    }
+
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+
+    .login-button {
+      background-color: #2e65f3;
+      color: white;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background-color 0.3s ease, transform 0.1s ease;
+    }
+
+    .login-button:hover {
+      background-color: #1a4ad9;
+    }
+
+    .login-button:active {
+      transform: scale(0.98);
+    }
+
+    .or-container {
+      margin: 25px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .or-container div {
+      flex: 1;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .or-container span {
+      margin: 0 15px;
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .create-account {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .create-account a {
+      color: #2e65f3;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .create-account a:hover {
+      text-decoration: underline;
+    }
+
+    .notification {
+      display: none;
+      margin: 15px 0;
+      padding: 12px;
+      border-radius: 6px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .notification.success {
+      background-color: #e7f7ed;
+      color: #28a745;
+      border-left: 4px solid #28a745;
+    }
+
+    .notification.error {
+      background-color: #ffebee;
+      color: #d32f2f;
+      border-left: 4px solid #d32f2f;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.85);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+      flex-direction: column;
+    }
+
+    .loading-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* New Loader Style */
+    .loader {
+      width: 40px;
+      aspect-ratio: 1;
+      color: #2e65f3;
+      position: relative;
+      background: radial-gradient(10px, currentColor 94%, #0000);
+    }
+    
+    .loader:before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(9px at bottom right, #0000 94%, currentColor) top left,
+        radial-gradient(9px at bottom left, #0000 94%, currentColor) top right,
+        radial-gradient(9px at top right, #0000 94%, currentColor) bottom left,
+        radial-gradient(9px at top left, #0000 94%, currentColor) bottom right;
+      background-size: 20px 20px;
+      background-repeat: no-repeat;
+      animation: l18 1.5s infinite cubic-bezier(0.3, 1, 0, 1);
+    }
+
+    @keyframes l18 {
+      33% {inset: -10px; transform: rotate(0deg)}
+      66% {inset: -10px; transform: rotate(90deg)}
+      100% {inset: 0; transform: rotate(90deg)}
+    }
+    
+    .loading-text {
+      position: relative;
+      margin-top: 30px;
+      color: #ffffff;
+      font-size: 16px;
+      letter-spacing: 1px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        opacity: 0.6;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0.6;
+      }
+    }
+
+    /* Tablet & up */
+    @media (min-width: 768px) {
+      .container {
+        padding: 50px;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      .clock-loader {
+        width: 150px;
+        height: 150px;
+      }
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .container {
+        padding: 30px 20px;
+      }
+      h1 {
+        font-size: 24px;
+      }
+      h2 {
+        font-size: 16px;
+      }
+      .input-group input {
+        font-size: 14px;
+        padding: 10px 40px 10px 12px;
+      }
+      .login-button {
+        font-size: 15px;
+        padding: 12px;
+      }
+      .toggle-password {
+        top: 36px;
+        font-size: 12px;
+      }
+      .clock-loader {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="loginContainer">
+    <img src="ontrack-logo.png" alt="ONTRACK Logo" class="logo" />
+    <h1>ONTRACK</h1>
+    <h2>LOGIN</h2>
+    
+    <div class="notification" id="notification"></div>
+    
+    <form id="loginForm">
+      <div class="input-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required />
+      </div>
+      
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required />
+        <span class="toggle-password" onclick="togglePassword('password', this)">Show</span>
+      </div>
+      
+      <div class="forgot-password">
+        <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+      </div>
+      
+      <button type="submit" class="login-button">Login</button>
+    </form>
+    
+    <div class="or-container">
+      <div></div>
+      <span>or</span>
+      <div></div>
+    </div>
+    
+    <div class="create-account">
+      Don't have an account? <a href="register.html">Register Now</a>
+    </div>
+  </div>
+
+  <!-- Loading Overlay with Clock Loader -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+    <div class="loading-text">Logging in...</div>
+  </div>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBA4IwkROlhrz2ts19gLD48Cio_D0qiqbw",
+      authDomain: "ontrack-585a4.firebaseapp.com",
+      projectId: "ontrack-585a4",
+      storageBucket: "ontrack-585a4.firebasestorage.app",
+      messagingSenderId: "799924979752",
+      appId: "1:799924979752:web:8a9579035dc75ea16dcd1d",
+      measurementId: "G-TBF0Y7BNDK"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    
+    // Add page to session history with replaceState to prevent going back
+    function preventBackToLogin() {
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, null, window.location.href);
+      }
+    }
+    
+    // Track if this is the initial page load
+    let isInitialLoad = true;
+    
+    // Check if user is already logged in
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        // Only redirect on initial load if session storage shows we're already authenticated
+        // This prevents redirect loops and allows manual navigation to login when needed
+        if (!isInitialLoad || sessionStorage.getItem('userAuthenticated') === 'true') {
+          // User is signed in and either:
+          // 1. This is not the initial page load, or
+          // 2. They were previously authenticated in this session
+          
+          // Add prevention
+          preventBackToLogin();
+          
+          // Hide login container while we're redirecting
+          document.getElementById('loginContainer').style.display = 'none';
+          showLoading();
+          
+          // Set a flag in sessionStorage to indicate user is authenticated
+          sessionStorage.setItem('userAuthenticated', 'true');
+          
+          // Redirect to dashboard with replaceState (prevents back navigation to login)
+          window.location.replace("dashboard.html");
+        } else {
+          // This is the initial page load and user hasn't logged in during this session
+          // Allow them to log in manually
+          document.getElementById('loginContainer').style.display = 'block';
+          hideLoading();
+        }
+      } else {
+        // User is not signed in
+        // Clear authentication flag since they're logged out
+        sessionStorage.removeItem('userAuthenticated');
+        
+        // Show the login container (it might be hidden if we're returning from a redirect)
+        document.getElementById('loginContainer').style.display = 'block';
+        hideLoading();
+      }
+      
+      // No longer the initial page load
+      isInitialLoad = false;
+    });
+    
+    // Add event listener for page visibility changes
+    document.addEventListener('visibilitychange', function() {
+      if (document.visibilityState === 'visible') {
+        // Check auth state when user returns to the page
+        auth.onAuthStateChanged(function(user) {
+          if (user && sessionStorage.getItem('userAuthenticated') === 'true') {
+            // Only redirect if user is authenticated AND we have set the authentication flag
+            // This prevents redirect on initial visibility
+            preventBackToLogin();
+            window.location.replace("dashboard.html");
+          }
+        });
+      }
+    });
+    
+    // Add event listener for popstate (when user clicks back/forward)
+    window.addEventListener('popstate', function(event) {
+      // Check if user is logged in
+      auth.onAuthStateChanged(function(user) {
+        if (user && sessionStorage.getItem('userAuthenticated') === 'true') {
+          // Only redirect if user is authenticated AND we have set the authentication flag
+          // This prevents auto-redirect when user hasn't explicitly logged in
+          preventBackToLogin();
+          window.location.replace("dashboard.html");
+        }
+      });
+    });
+    
+    // Password visibility toggle
+    function togglePassword(id, el) {
+      const input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+        el.textContent = "Hide";
+      } else {
+        input.type = "password";
+        el.textContent = "Show";
+      }
+    }
+    
+    // Show/hide loading overlay
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('active');
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+    
+    // Login form submission
+    document.getElementById('loginForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      // Declare the login button OUTSIDE try block
+      const loginButton = document.querySelector('.login-button');
+
+      try {
+        // Show loading state
+        loginButton.textContent = "Logging in...";
+        loginButton.disabled = true;
+        showLoading();
+
+        // Sign in with email and password
+        await auth.signInWithEmailAndPassword(email, password);
+
+        // Success
+        showNotification('Login successful! Redirecting to dashboard...', 'success');
+        sessionStorage.setItem('userAuthenticated', 'true');
+        preventBackToLogin();
+
+        setTimeout(() => {
+          window.location.replace("dashboard.html");
+        }, 1500);
+
+      } catch (error) {
+        console.error("Error: ", error);
+
+        // Reset button state
+        loginButton.textContent = "Login";
+        loginButton.disabled = false;
+        hideLoading();
+
+        // Show user-friendly error messages
+        if (error.code === 'auth/invalid-login-credentials') {
+          showNotification('Invalid email or password. Please check your credentials and try again.', 'error');
+        } else if (error.code === 'auth/wrong-password') {
+          showNotification('Incorrect password. Please try again or reset your password.', 'error');
+        } else if (error.code === 'auth/invalid-email') {
+          showNotification('Please enter a valid email address.', 'error');
+        } else if (error.code === 'auth/too-many-requests') {
+          showNotification('Too many unsuccessful login attempts. Please try again later or reset your password.', 'error');
+        } else {
+          showNotification('Error: ' + error.message, 'error');
+        }
+      }
+    });
+
+    
+    // Forgot password functionality
+    document.getElementById('forgotPasswordLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      
+      if (!email) {
+        showNotification('Please enter your email address in the email field above.', 'error');
+        return;
+      }
+      
+      auth.sendPasswordResetEmail(email)
+        .then(() => {
+          showNotification('Password reset email sent! Please check your inbox.', 'success');
+        })
+        .catch((error) => {
+          console.error("Error: ", error);
+          
+          if (error.code === 'auth/user-not-found') {
+            showNotification('No account found with this email address.', 'error');
+          } else if (error.code === 'auth/invalid-email') {
+            showNotification('Please enter a valid email address.', 'error');
+          } else {
+            showNotification('Error: ' + error.message, 'error');
+          }
+        });
+    });
+    
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      if (!notification) return;
+
+      notification.textContent = message;
+      notification.className = `notification ${type}`;
+      notification.style.display = 'block';
+
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+    
+    // If user arrives from registration page with success message
+    const urlParams = new URLSearchParams(window.location.search);
+    const registrationSuccess = urlParams.get('registration');
+    
+    if (registrationSuccess === 'success') {
+      showNotification('Registration successful! Please log in with your credentials.', 'success');
+      const notification = document.getElementById('notification');
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 5000);
+    }
+
+  </script>
+</body>
+</html>

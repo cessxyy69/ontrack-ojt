@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Logs</title>
+  <link rel="stylesheet" href="timelogs-styles.css">
+  <script src="timelogs-script.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+  <header>
+    <img src="ontrack-logo.png" alt="Logo" class="logo">
+
+    <button id="openSidebar" class="menu-icon">&#9776;</button> <!-- hamburger -->
+  </header>
+
+  <nav id="sidebar">
+    <button id="closeSidebar" class="close-icon">&times;</button>
+    <ul>
+      <li>
+        <a href="dashboard.html">
+          <img src="dashboard.png" alt="Dashboard Icon" class="menu-icon-img"> Dashboard
+        </a>
+      </li>
+      <li class="active">
+        <a href="timelogs.html">
+          <img src="time-logs.png" alt="Time Logs Icon" class="menu-icon-img"> Time Logs
+        </a>
+      </li>
+      <li>
+        <a href="tasks.html">
+          <img src="tasks.png" alt="Tasks Icon" class="menu-icon-img"> Tasks
+        </a>
+      </li>
+      <li>
+        <a href="reports.html">
+          <img src="reports.png" alt="Reports Icon" class="menu-icon-img"> Reports
+        </a>
+      </li>
+      <li>
+        <a href="profile.html">
+          <img src="profile.png" alt="Profile Icon" class="menu-icon-img"> Profile
+        </a>
+      </li>
+    </ul>
+
+    <div class="sign-out-container">
+      <button id="signOutBtn" class="signout-btn">
+        <img src="sign-out.png" alt="Sign Out Icon" class="signout-icon">
+        Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <main class="main-content-timelogs">
+    <section class="time-logs">
+      <h1>Time Logs</h1>
+      <p>Manage and track your daily activities</p>
+
+      <div class="actions">
+        <button class="export-btn">📄 Export PDF</button>
+        <button class="new-log-btn">+ New Log</button>
+      </div>
+
+      <div class="filters-card">
+        <h2>Filters</h2>
+        <p>Filter your time logs by date, status, or description</p>
+
+        <label for="search">Search Description</label>
+        <input type="text" id="search" placeholder="🔍 Search activities..." />
+
+        <label for="status">Status</label>
+        <select id="status">
+          <option value="" disabled selected>Select Status</option>
+          <option>All Statuses</option>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
+
+        <label for="date">Date</label>
+        <input type="date" id="date" class="filter-date" />
+
+        <button class="clear-btn">Clear Filters</button>
+      </div>
+    </section>
+    <section class="tlcards">
+      <div class="tlcard1">
+        <p class="tllabel">Total Entries</p>
+        <h2>21</h2>
+      </div>
+      <div class="tlcard2">
+        <p class="tllabel">Total Hours</p>
+        <h2>123</h2>
+      </div>
+      <div class="tlcard3">
+        <p class="tllabel">Approved Entries</p>
+        <h2>17</h2>
+      </div>
+    </section>
+    <section>
+      <div class="activity-logs">
+        <h2>Activity Logs</h2>
+        <p>Your submitted time logs and their status</p>
+
+        <div class="logs-table-container">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Hours</th>
+                <th>Activities</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Apr 14, 2025</td>
+                <td>9:00 AM - 2:00 PM</td>
+                <td>5</td>
+                <td>Ginawa ko to</td>
+                <td><span class="status-pending">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Log Form Overlay -->
+  <div class="log-form-overlay" id="logFormOverlay">
+    <div class="log-form-container">
+      <div class="log-form-header">
+        <h2>Log Daily Activity</h2>
+        <p>Record your daily OJT activities and hours rendered</p>
+      </div>
+
+      <form id="activityLogForm" class="log-form">
+        <!-- Date -->
+        <div class="form-group">
+          <label for="date">Date</label>
+          <div class="input-with-icon">
+            <input type="date" id="date" required>
+            <span class="input-icon">📅</span>
+          </div>
+        </div>
+
+        <!-- Time In and Time Out -->
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="timeIn">Time In</label>
+            <div class="input-with-icon">
+              <input type="time" id="timeIn" required>
+              <span class="input-icon">🕒</span>
+            </div>
+          </div>
+
+          <div class="form-group half">
+            <label for="timeOut">Time Out</label>
+            <div class="input-with-icon">
+              <input type="time" id="timeOut" required>
+              <span class="input-icon">🕒</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Activities -->
+        <div class="form-group">
+          <label for="activities">Activities Performed</label>
+          <textarea id="activities" rows="5" placeholder="Describe the tasks and activities you performed today..."
+            required></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+          <button type="submit" class="btn-submit" id="submitBtn">Submit Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Success Message Popup -->
+  <div class="success-popup" id="successPopup">
+    <div class="success-content">
+      <div class="success-icon">✓</div>
+      <h3>Submitted Successfully</h3>
+      <p>Your activity log has been recorded.</p>
+      <button class="btn-close" id="closeSuccessBtn">Close</button>
+    </div>
+  </div>
+
+  <!-- Overlay Background -->
+  <div class="overlay-background" id="overlayBackground"></div>
+</body>
+
+</html>

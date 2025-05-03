@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ONTRACK Registration</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fc;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: white;
+      padding: 40px 50px;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 800px;
+    }
+
+    .container img {
+      display: block;
+      margin: 0 auto 15px;
+      width: 120px;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 5px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: normal;
+      margin-bottom: 20px;
+    }
+
+    form {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    .step-dot {
+      width: 12px;
+      height: 12px;
+      background-color: #ccc;
+      border-radius: 50%;
+      margin: 0 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .step-dot.active {
+      background-color: #2e65f3;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 10px 45px 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+      height: 42px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .input-row .input-group {
+      flex: 1;
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      top: 36px;
+      font-size: 13px;
+      color: #2e65f3;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .password-strength {
+      margin-top: 5px;
+      height: 5px;
+      border-radius: 3px;
+      background-color: #ddd;
+      overflow: hidden;
+    }
+
+    .password-strength-meter {
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s ease, background-color 0.3s ease;
+    }
+
+    .password-feedback {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-next {
+      background-color: #2e65f3;
+      color: white;
+    }
+
+    .btn-next:hover {
+      background-color: #1a4ad9;
+    }
+
+    .btn-back {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-back:hover {
+      background-color: #e0e0e0;
+    }
+
+    .btn-submit {
+      background-color: #2e65f3;
+      color: white;
+      width: 100%;
+    }
+
+    .btn-submit:hover {
+      background-color: #1a4ad9;
+    }
+
+    .notification {
+      display: none;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    .notification.success {
+      background-color: #e7f7ed;
+      color: #28a745;
+    }
+
+    .notification.error {
+      background-color: #ffebee;
+      color: #d32f2f;
+      border-left: 4px solid #d32f2f;
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+
+    .login-link a {
+      color: #2e65f3;
+      text-decoration: none;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 30px 20px;
+        max-width: 100%;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      h2 {
+        font-size: 16px;
+      }
+
+      .input-group input, .input-group select {
+        font-size: 14px;
+        height: 38px;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        font-size: 14px;
+      }
+
+      .toggle-password {
+        font-size: 12px;
+      }
+      
+      .input-row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 25px 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <img src="ontrack-logo.png" alt="ONTRACK Logo" />
+    <h1>ONTRACK</h1>
+    <h2>REGISTRATION</h2>
+    
+    <div class="step-indicator">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+    
+    <form id="registrationForm">
+      <!-- Step 1: User Info -->
+      <div class="step active" id="step-1">
+        <h3 style="margin-bottom: 20px; text-align: center;">Personal Information</h3>
+        <div class="input-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" name="fullName" required />
+        </div>
+        <div class="input-group">
+          <label for="studentID">Student ID</label>
+          <input type="text" id="studentID" name="studentID" required />
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="course">Course</label>
+            <input type="text" id="course" name="course" required />
+          </div>
+          <div class="input-group">
+            <label for="year">Year</label>
+            <select id="year" name="year" required>
+              <option value="">Select Year</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="5th Year">5th Year</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="school">School</label>
+          <input type="text" id="school" name="school" required />
+        </div>
+        <div class="input-group">
+          <label for="userEmail">Your Email Address</label>
+          <input type="email" id="userEmail" name="userEmail" placeholder="This will be used for logging in" required />
+        </div>
+        <div class="buttons">
+          <div></div> <!-- Empty div for flex spacing -->
+          <button type="button" class="btn btn-next" id="step1Next">Next</button>
+        </div>
+      </div>
+      
+      <!-- Step 2: OJT Info -->
+      <div class="step" id="step-2">
+        <h3 style="margin-bottom: 20px; text-align: center;">OJT Information</h3>
+        <div class="input-group">
+          <label for="company">Company</label>
+          <input type="text" id="company" name="company" required />
+        </div>
+        <div class="input-group">
+          <label for="ojtAdviser">OJT Adviser</label>
+          <input type="text" id="ojtAdviser" name="ojtAdviser" required />
+        </div>
+        <div class="input-group">
+          <label for="adviserEmail">OJT Adviser Email Address</label>
+          <input type="email" id="adviserEmail" name="adviserEmail" placeholder="Your OJT adviser's email address" required />
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate" required />
+          </div>
+          <div class="input-group">
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" name="endDate" required />
+          </div>
+        </div>
+        <div class="input-group">
+          <label for="requiredHours">Required Hours</label>
+          <input type="number" id="requiredHours" name="requiredHours" min="1" required />
+        </div>
+        <div class="buttons">
+          <button type="button" class="btn btn-back" id="step2Back">Back</button>
+          <button type="button" class="btn btn-next" id="step2Next">Next</button>
+        </div>
+      </div>
+      
+      <!-- Step 3: Login Info -->
+      <div class="step" id="step-3">
+        <h3 style="margin-bottom: 20px; text-align: center;">Account Information</h3>
+        <div class="input-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" name="loginEmail" required />
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required />
+          <span class="toggle-password" onclick="togglePassword('password', this)">Show</span>
+          <div class="password-strength">
+            <div class="password-strength-meter" id="password-strength-meter"></div>
+          </div>
+          <div class="password-feedback" id="password-feedback">Enter a strong password</div>
+        </div>
+        <div class="input-group">
+          <label for="confirmPassword">Re-enter Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" required />
+          <span class="toggle-password" onclick="togglePassword('confirmPassword', this)">Show</span>
+        </div>
+        <div class="buttons">
+          <button type="button" class="btn btn-back" id="step3Back">Back</button>
+          <button type="submit" class="btn btn-submit" id="submitBtn">Create Account</button>
+        </div>
+      </div>
+    </form>
+    
+    <div class="notification" id="notification"></div>
+    <div class="login-link">Already have an account? <a href="login.html">Login here</a></div>
+  </div>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+  <!-- Firebase Analytics -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-analytics-compat.min.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBA4IwkROlhrz2ts19gLD48Cio_D0qiqbw",
+      authDomain: "ontrack-585a4.firebaseapp.com",
+      projectId: "ontrack-585a4",
+      storageBucket: "ontrack-585a4.firebasestorage.app",
+      messagingSenderId: "799924979752",
+      appId: "1:799924979752:web:8a9579035dc75ea16dcd1d",
+      measurementId: "G-TBF0Y7BNDK"
+    };
+    
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+    const app = firebase.initializeApp(firebaseConfig);
+    
+    // Multi-step form navigation
+    const steps = document.querySelectorAll('.step');
+    const dots = document.querySelectorAll('.step-dot');
+    let currentStep = 1;
+    
+    // Next button listeners
+    document.getElementById('step1Next').addEventListener('click', () => {
+      // Validate Step 1
+      const step1Inputs = document.querySelectorAll('#step-1 input, #step-1 select');
+      let isValid = true;
+      
+      step1Inputs.forEach(input => {
+        if (!input.value.trim()) {
+          isValid = false;
+          input.style.borderColor = '#d32f2f';
+        } else {
+          input.style.borderColor = '#ccc';
+        }
+      });
+      
+      if (isValid) {
+        // Auto-fill email in step 3 based on step 1
+        const userEmail = document.getElementById('userEmail').value;
+        document.getElementById('loginEmail').value = userEmail;
+        
+        goToStep(2);
+      } else {
+        showNotification('Please fill in all required fields', 'error');
+      }
+    });
+    
+    document.getElementById('step2Next').addEventListener('click', () => {
+      // Validate Step 2
+      const step2Inputs = document.querySelectorAll('#step-2 input');
+      let isValid = true;
+      
+      step2Inputs.forEach(input => {
+        if (!input.value.trim()) {
+          isValid = false;
+          input.style.borderColor = '#d32f2f';
+        } else {
+          input.style.borderColor = '#ccc';
+        }
+      });
+      
+      // Check if end date is after start date
+      const startDate = new Date(document.getElementById('startDate').value);
+      const endDate = new Date(document.getElementById('endDate').value);
+      
+      if (endDate <= startDate) {
+        isValid = false;
+        document.getElementById('endDate').style.borderColor = '#d32f2f';
+        showNotification('End date must be after start date', 'error');
+        return;
+      }
+      
+      if (isValid) {
+        // No need to auto-fill email in step 3 as we're now using the email from step 1
+        goToStep(3);
+      } else {
+        showNotification('Please fill in all required fields', 'error');
+      }
+    });
+    
+    // Back button listeners
+    document.getElementById('step2Back').addEventListener('click', () => {
+      goToStep(1);
+    });
+    
+    document.getElementById('step3Back').addEventListener('click', () => {
+      goToStep(2);
+    });
+    
+    function goToStep(step) {
+      // Hide all steps
+      steps.forEach(s => s.classList.remove('active'));
+      // Update dots
+      dots.forEach(d => d.classList.remove('active'));
+      
+      // Show current step
+      document.getElementById(`step-${step}`).classList.add('active');
+      document.getElementById(`dot-${step}`).classList.add('active');
+      
+      currentStep = step;
+    }
+    
+    // Password visibility toggle
+    function togglePassword(id, el) {
+      const input = document.getElementById(id);
+      if (input.type === "password") {
+        input.type = "text";
+        el.textContent = "Hide";
+      } else {
+        input.type = "password";
+        el.textContent = "Show";
+      }
+    }
+    
+    // Password strength checker
+    const passwordInput = document.getElementById('password');
+    const strengthMeter = document.getElementById('password-strength-meter');
+    const feedbackText = document.getElementById('password-feedback');
+    
+    passwordInput.addEventListener('input', checkPasswordStrength);
+    
+    function checkPasswordStrength() {
+      const password = passwordInput.value;
+      let strength = 0;
+      let feedback = '';
+      
+      // Length check
+      if (password.length >= 8) {
+        strength += 25;
+      }
+      
+      // Contains lowercase
+      if (/[a-z]/.test(password)) {
+        strength += 25;
+      }
+      
+      // Contains uppercase
+      if (/[A-Z]/.test(password)) {
+        strength += 25;
+      }
+      
+      // Contains numbers or special characters
+      if (/[0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+        strength += 25;
+      }
+      
+      // Update strength meter
+      strengthMeter.style.width = strength + '%';
+      
+      // Set color based on strength
+      if (strength <= 25) {
+        strengthMeter.style.backgroundColor = '#d32f2f';
+        feedback = 'Weak password';
+      } else if (strength <= 50) {
+        strengthMeter.style.backgroundColor = '#ff9800';
+        feedback = 'Moderate password';
+      } else if (strength <= 75) {
+        strengthMeter.style.backgroundColor = '#4caf50';
+        feedback = 'Good password';
+      } else {
+        strengthMeter.style.backgroundColor = '#2e7d32';
+        feedback = 'Strong password';
+      }
+      
+      feedbackText.textContent = feedback;
+      return strength;
+    }
+    
+    // Form submission
+    document.getElementById('registrationForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Validate password strength
+      const passwordStrength = checkPasswordStrength();
+      if (passwordStrength < 75) {
+        showNotification('Please create a stronger password', 'error');
+        return;
+      }
+      
+      // Check if passwords match
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      if (password !== confirmPassword) {
+        showNotification('Passwords do not match!', 'error');
+        return;
+      }
+      
+      // Reference the Firestore collection
+      const usersRef = firebase.firestore().collection("users");
+
+      // Get user data (as in your original snippet)
+      const userData = {
+        fullName: document.getElementById('fullName').value,
+        studentID: document.getElementById('studentID').value,
+        course: document.getElementById('course').value,
+        year: document.getElementById('year').value,
+        school: document.getElementById('school').value,
+        email: document.getElementById('userEmail').value,
+        company: document.getElementById('company').value,
+        ojtAdviser: document.getElementById('ojtAdviser').value,
+        adviserEmail: document.getElementById('adviserEmail').value,
+        ojtPeriod: {
+          startDate: document.getElementById('startDate').value,
+          endDate: document.getElementById('endDate').value
+        },
+        requiredHours: document.getElementById('requiredHours').value,
+        createdAt: firebase.firestore.Timestamp.fromDate(new Date())
+      };
+
+      // Save to Firestore
+      usersRef.add(userData)
+        .then((docRef) => {
+          console.log("Document written with ID: ", docRef.id);
+          alert("User data saved successfully!");
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
+
+      const email = document.getElementById('loginEmail').value;
+      
+      try {
+        // Create user with email and password
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Store additional user data in Firestore
+        await db.collection('users').doc(user.uid).set(userData);
+        
+        showNotification('Registration successful! Redirecting to dashboard...', 'success');
+        
+        // Redirect to login page after successful registration
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 3000);
+        
+      } catch (error) {
+        console.error("Error: ", error);
+        
+        // Handle specific error cases with more user-friendly messages
+        if (error.code === 'auth/email-already-in-use') {
+          showNotification('This email address is already registered. Please use a different email or try logging in.', 'error');
+        } else if (error.code === 'auth/invalid-email') {
+          showNotification('Please enter a valid email address.', 'error');
+        } else if (error.code === 'auth/weak-password') {
+          showNotification('Password is too weak. Please choose a stronger password.', 'error');
+        } else {
+          showNotification('Error: ' + error.message, 'error');
+        }
+      }
+    });
+    
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = 'notification';
+      notification.classList.add(type);
+      notification.style.display = 'block';
+      
+      if (type === 'error') {
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 5000);
+      }
+    }
+  </script>
+</body>
+</html>

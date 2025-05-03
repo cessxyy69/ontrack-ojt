@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ONTRACK Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f7f9fc;
+    }
+
+    /* Header */
+    header {
+      background-color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      width: 150px;
+      height: 50px;
+    }
+
+    .hamburger {
+      font-size: 26px;
+      cursor: pointer;
+    }
+
+    /* Sidebar */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      right: -300px;
+      width: 300px;
+      height: 100%;
+      background: white;
+      box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+      padding-top: 60px;
+      transition: right 0.3s ease;
+      z-index: 999;
+      overflow-y: auto;
+    }
+
+    #sidebar ul {
+      list-style: none;
+    }
+
+    #sidebar ul li {
+      padding: 10px 20px;
+    }
+
+    #sidebar ul li a {
+      text-decoration: none;
+      color: #333;
+      display: block;
+      transition: 0.3s;
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #sidebar ul li a:hover {
+      background-color: #547792;
+      color: white;
+      font-weight: bold;
+    }
+
+    #sidebar ul li.active a {
+      background-color: #547792;
+      color: white;
+      font-weight: bold;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    /* Main Content */
+    #sidebar.active {
+      right: 0;
+    }
+
+    .menu-icon {
+      font-size: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    #sidebar .close-icon {
+      position: absolute;
+      top: 27px;
+      right: 20px;
+      font-size: 30px;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .menu-icon-img {
+      width: 30px;
+      height: 30px;
+      vertical-align: middle;
+      margin-right: 10px;
+    }
+
+    .sign-out-container {
+      padding: 10px;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .signout-btn {
+      background-color: #ECEFCA;
+      color: #000000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      width: calc(100% - 20px);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .signout-btn:hover {
+      background-color: #547792;
+      color: white;
+      font-weight: bold;
+    }
+
+    .signout-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin: 20px auto;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .profile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .profile-title {
+      font-weight: bold;
+      font-size: 1.6rem;
+      color: #333;
+    }
+
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 1rem;
+      margin-left: 10px;
+    }
+
+    .edit-btn {
+      background-color: #2e65f3;
+      color: white;
+    }
+
+    .edit-btn:hover {
+      background-color: #1a4ad9;
+    }
+
+    .verify-btn {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .verify-btn:hover {
+      background-color: #218838;
+    }
+
+    .verified-badge {
+      background-color: #d4f4dd;
+      color: #2e7d32;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .save-btn {
+      background-color: #28a745;
+      color: white;
+      display: none;
+      width: 100%;
+      margin-top: 20px;
+      font-weight: bold;
+      padding: 12px;
+    }
+
+    .save-btn:hover {
+      background-color: #218838;
+    }
+
+    .profile-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 25px;
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #fafafa;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .profile-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .profile-image-container {
+      width: 180px;
+      height: 180px;
+      position: relative;
+      margin-bottom: 15px;
+    }
+
+    .profile-image {
+      width: 100%;
+      height: 100%;
+      background-color: #e0e0e0;
+      border-radius: 50%;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .profile-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .upload-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.7);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom-left-radius: 50%;
+      border-bottom-right-radius: 50%;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .profile-image-container:hover .upload-overlay {
+      opacity: 1;
+    }
+
+    #photoUpload {
+      display: none;
+    }
+
+    .upload-btn {
+      background-color: #2e65f3;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .upload-btn:hover {
+      background-color: #1a4ad9;
+    }
+
+    .details p,
+    .edit-details input,
+    .edit-details select {
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      font-size: 1rem;
+      width: 100%;
+      background-color: #fff;
+    }
+
+    .edit-details input,
+    .edit-details select {
+      background-color: #f9f9f9;
+    }
+
+    .details,
+    .edit-details {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .verification-badge {
+      display: inline-flex;
+      align-items: center;
+      background-color: #e7f7ed;
+      color: #28a745;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .verification-badge i {
+      margin-right: 4px;
+    }
+
+    .logbook {
+      margin-top: 40px;
+    }
+
+    .logbook-header {
+      font-weight: bold;
+      font-size: 1.2rem;
+      color: #333;
+      margin-bottom: 12px;
+    }
+
+    .logbook-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .logbook-table th,
+    .logbook-table td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .logbook-table th {
+      background-color: #f0f2f5;
+      font-weight: bold;
+    }
+
+    .status {
+      padding: 0.3rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    .status.approved {
+      background-color: #d4f4dd;
+      color: #2e7d32;
+    }
+
+    .notification {
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .notification.success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+
+    .notification.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .profile-section {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px;
+      }
+
+      .details,
+      .edit-details {
+        width: 100%;
+      }
+
+      .save-btn {
+        width: 100%;
+      }
+
+      .logbook-table th,
+      .logbook-table td {
+        font-size: 0.95rem;
+      }
+
+      .btn {
+        margin-top: 10px;
+        margin-left: 0;
+      }
+    }
+
+    .back-button {
+      background-color: #6c757d;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      font-size: 1rem;
+      margin-top: 20px;
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    .back-button:hover {
+      background-color: #5a6268;
+    }
+
+    /* Loading spinner */
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-radius: 50%;
+      border-top: 5px solid #2e65f3;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="ontrack-logo.png" alt="Logo" class="logo">
+
+    <button id="openSidebar" class="menu-icon">&#9776;</button> <!-- hamburger -->
+  </header>
+
+  <nav id="sidebar">
+    <button id="closeSidebar" class="close-icon">&times;</button>
+    <ul>
+      <li>
+        <a href="dashboard.html">
+          <img src="dashboard.png" alt="Dashboard Icon" class="menu-icon-img"> Dashboard
+        </a>
+      </li>
+      <li>
+        <a href="timelogs.html">
+          <img src="time-logs.png" alt="Time Logs Icon" class="menu-icon-img"> Time Logs
+        </a>
+      </li>
+      <li>
+        <a href="tasks.html">
+          <img src="tasks.png" alt="Tasks Icon" class="menu-icon-img"> Tasks
+        </a>
+      </li>
+      <li>
+        <a href="reports.html">
+          <img src="reports.png" alt="Reports Icon" class="menu-icon-img"> Reports
+        </a>
+      </li>
+      <li class="active">
+        <a href="profile.html">
+          <img src="profile.png" alt="Profile Icon" class="menu-icon-img"> Profile
+        </a>
+      </li>
+    </ul>
+
+    <div class="sign-out-container">
+      <button id="signOutBtn" class="signout-btn">
+        <img src="sign-out.png" alt="Sign Out Icon" class="signout-icon">
+        Sign Out
+      </button>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>ONTRACK Profile</h1>
+    
+    <div id="notification" class="notification"></div>
+    
+    <div class="profile-header">
+      <span class="profile-title">Profile Information</span>
+      <div>
+        <span id="emailVerifiedBadge" class="verified-badge">Email Verified</span>
+        <button id="verifyEmailBtn" class="btn verify-btn">Verify Email</button>
+        <button class="btn edit-btn" onclick="toggleEdit()">Edit Profile</button>
+      </div>
+    </div>
+    
+    <!-- Loading spinner -->
+    <div id="loader" class="loader"></div>
+    
+    <div class="profile-section">
+      <div class="profile-left">
+        <div class="profile-image-container">
+          <div class="profile-image" id="profileImageContainer">
+            <!-- Default profile image initially -->
+            <img id="profileImg" src="/api/placeholder/180/180" alt="Profile Picture">
+          </div>
+          <div class="upload-overlay" onclick="document.getElementById('photoUpload').click()">
+            Change Photo
+          </div>
+        </div>
+        <input type="file" id="photoUpload" accept="image/*" onchange="handlePhotoUpload(event)">
+      </div>
+      
+      <div class="details" id="profileDetails">
+        <!-- This will be populated from Firebase -->
+        <p>Loading profile information...</p>
+      </div>
+      
+      <div class="edit-details" id="editDetails" style="display: none;">
+        <!-- This will be populated from Firebase -->
+      </div>
+    </div>
+    
+    <button class="save-btn" onclick="saveChanges()">Save Changes</button>
+
+    <div class="logbook">
+      <p class="logbook-header">Logbook Entries</p>
+      <table class="logbook-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Activity</th>
+            <th>Hours</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="logbookEntries">
+          <!-- This will be populated from Firebase -->
+          <tr>
+            <td colspan="4" style="text-align: center;">Loading logbook entries...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <a href="dashboard.html" class="back-button">Back to Dashboard</a>
+  </div>
+
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-app-compat.min.js"></script>
+  <!-- Firebase Auth -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-auth-compat.min.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-firestore-compat.min.js"></script>
+  <!-- Firebase Storage -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.23.0/firebase-storage-compat.min.js"></script>
+
+  <script>
+      /* START JS FOR SIDEBAR */
+    const openSidebarBtn = document.getElementById('openSidebar');
+    const closeSidebarBtn = document.getElementById('closeSidebar');
+    const sidebar = document.querySelector('#sidebar');
+
+    openSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.add('active');
+        openSidebarBtn.style.display = 'none';
+        closeSidebarBtn.style.display = 'inline-block';
+    });
+
+    closeSidebarBtn.addEventListener('click', () => {
+        sidebar.classList.remove('active');
+        openSidebarBtn.style.display = 'inline-block';
+        closeSidebarBtn.style.display = 'none';
+    });
+    /* END JS FOR SIDEBAR */
+
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBA4IwkROlhrz2ts19gLD48Cio_D0qiqbw",
+      authDomain: "ontrack-585a4.firebaseapp.com",
+      projectId: "ontrack-585a4",
+      storageBucket: "ontrack-585a4.firebasestorage.app",
+      messagingSenderId: "799924979752",
+      appId: "1:799924979752:web:8a9579035dc75ea16dcd1d",
+      measurementId: "G-TBF0Y7BNDK"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // Global variables
+    let currentUser = null;
+    let userData = null;
+
+    // Sign out functionality
+    document.getElementById('signOutBtn').addEventListener('click', function() {
+      auth.signOut().then(() => {
+        window.location.href = "landing-page.html";
+      }).catch((error) => {
+        console.error("Sign out error:", error);
+        showNotification('Failed to sign out. Please try again.', 'error');
+      });
+    });
+
+    // Check authentication state
+    auth.onAuthStateChanged(function(user) {
+      if (user) {
+        // User is signed in
+        currentUser = user;
+        console.log("User is signed in:", user.uid);
+        
+        // Update email verification UI
+        updateEmailVerificationUI();
+        
+        // Load user data
+        loadUserData();
+        
+        // Load logbook entries
+        loadLogbookEntries();
+      } else {
+        // Redirect to login if not authenticated
+        console.log("No user is signed in");
+        window.location.href = "login.html";
+      }
+    });
+
+    // Update email verification UI based on user's verification status
+    function updateEmailVerificationUI() {
+      const verifyEmailBtn = document.getElementById('verifyEmailBtn');
+      const emailVerifiedBadge = document.getElementById('emailVerifiedBadge');
+      
+      if (currentUser.emailVerified) {
+        verifyEmailBtn.style.display = 'none';
+        emailVerifiedBadge.style.display = 'inline-block';
+      } else {
+        verifyEmailBtn.style.display = 'inline-block';
+        emailVerifiedBadge.style.display = 'none';
+      }
+    }
+
+    // Load user data from Firestore
+    function loadUserData() {
+      // Show loading indicator
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('profileDetails').innerHTML = '<p>Loading profile information...</p>';
+      
+      console.log("Fetching user data for UID:", currentUser.uid);
+      
+      db.collection('users').doc(currentUser.uid).get()
+        .then((doc) => {
+          // Hide loading indicator
+          document.getElementById('loader').style.display = 'none';
+          
+          if (doc.exists) {
+            userData = doc.data();
+            console.log("User data retrieved:", userData);
+            
+            // Populate profile details
+            populateProfileDetails(userData);
+            
+            // Populate edit form
+            populateEditForm(userData);
+            
+            // Check for profile image
+            loadProfileImage();
+          } else {
+            console.error("User document does not exist");
+            showNotification('Your profile data is not found. Please complete your profile.', 'error');
+            
+            // If no user document exists, create one with email only
+            userData = { email: currentUser.email };
+            populateProfileDetails(userData);
+            populateEditForm(userData);
+          }
+        })
+        .catch((error) => {
+          // Hide loading indicator
+          document.getElementById('loader').style.display = 'none';
+          
+          console.error("Error loading user data:", error);
+          showNotification('Failed to load user data. Please try again.', 'error');
+          
+          // Still populate with whatever data we have from auth
+          userData = { email: currentUser.email };
+          populateProfileDetails(userData);
+          populateEditForm(userData);
+        });
+    }
+
+    // Load profile image from storage if it exists
+    function loadProfileImage() {
+      const profileImageDisplay = document.getElementById('profileImageDisplay');
+      const defaultImage = 'images/default-profile.png';
+      
+      // Get reference to the user's profile image
+      const storageRef = storage.ref();
+      const profileImgRef = storageRef.child(`profileImages/${currentUser.uid}`);
+      
+      profileImgRef.getDownloadURL()
+        .then((url) => {
+          // Image exists, display it
+          profileImageDisplay.src = url;
+          document.getElementById('profileImg').src = url;
+        })
+        .catch((error) => {
+          // Image doesn't exist or error occurred, use default
+          if (error.code === 'storage/object-not-found') {
+            // This is fine, just use the default image
+            console.log("No profile image found, using default");
+            profileImageDisplay.src = defaultImage;
+          } else {
+            console.error("Error loading profile image:", error);
+          }
+        });
+    }
+
+    // Populate profile details with safe data access
+    function populateProfileDetails(data) {
+      const detailsContainer = document.getElementById('profileDetails');
+      
+      // Email with verification status
+      let emailHtml = `<p><strong>Email:</strong> ${currentUser.email}`;
+      if (currentUser.emailVerified) {
+        emailHtml += ` <span class="verification-badge"><i>✓</i> Verified</span>`;
+      }
+      emailHtml += `</p>`;
+      
+      // Safely access nested properties with optional chaining
+      const startDate = data.ojtPeriod?.startDate || 'Not set';
+      const endDate = data.ojtPeriod?.endDate || 'Not set';
+      
+      detailsContainer.innerHTML = `
+        <p><strong>Full Name:</strong> ${data.fullName || 'Not provided'}</p>
+        <p><strong>Student ID:</strong> ${data.studentID || 'Not provided'}</p>
+        <p><strong>Course & Year:</strong> ${data.course || 'Not provided'} - ${data.year || 'Not provided'}</p>
+        <p><strong>School:</strong> ${data.school || 'Not provided'}</p>
+        ${emailHtml}
+        <p><strong>OJT Company:</strong> ${data.company || 'Not provided'}</p>
+        <p><strong>OJT Adviser:</strong> ${data.ojtAdviser || 'Not provided'}</p>
+        <p><strong>Adviser Email:</strong> ${data.adviserEmail || 'Not provided'}</p>
+        <p><strong>OJT Start Date:</strong> ${startDate}</p>
+        <p><strong>OJT End Date:</strong> ${endDate}</p>
+        <p><strong>Required Hours:</strong> ${data.requiredHours || '0'}</p>
+        <p><strong>Completed Hours:</strong> <span id="completedHoursDisplay">0</span></p>
+      `;
+    }
+
+    // Populate edit form with user data
+    function populateEditForm(data) {
+      // Check if we're using the dynamic form creation approach or the static form elements
+      const editContainer = document.getElementById('editDetails');
+      const editFullName = document.getElementById('editFullName');
+      
+      if (editContainer && !editFullName) {
+        // Dynamic form approach from first script
+        // Safely access nested properties
+        const startDate = data.ojtPeriod?.startDate || '';
+        const endDate = data.ojtPeriod?.endDate || '';
+        
+        editContainer.innerHTML = `
+          <input type="text" id="editFullName" placeholder="Full Name" value="${data.fullName || ''}">
+          <input type="text" id="editStudentID" placeholder="Student ID" value="${data.studentID || ''}">
+          <div style="display: flex; gap: 10px;">
+            <input type="text" id="editCourse" placeholder="Course" value="${data.course || ''}" style="flex: 1;">
+            <select id="editYear" style="flex: 1;">
+              <option value="">Select Year</option>
+              <option value="1st Year" ${data.year === '1st Year' ? 'selected' : ''}>1st Year</option>
+              <option value="2nd Year" ${data.year === '2nd Year' ? 'selected' : ''}>2nd Year</option>
+              <option value="3rd Year" ${data.year === '3rd Year' ? 'selected' : ''}>3rd Year</option>
+              <option value="4th Year" ${data.year === '4th Year' ? 'selected' : ''}>4th Year</option>
+              <option value="5th Year" ${data.year === '5th Year' ? 'selected' : ''}>5th Year</option>
+            </select>
+          </div>
+          <input type="text" id="editSchool" placeholder="School" value="${data.school || ''}">
+          <input type="text" id="editCompany" placeholder="OJT Company" value="${data.company || ''}">
+          <input type="text" id="editOjtAdviser" placeholder="OJT Adviser" value="${data.ojtAdviser || ''}">
+          <input type="email" id="editAdviserEmail" placeholder="Adviser Email" value="${data.adviserEmail || ''}">
+          <div style="display: flex; gap: 10px;">
+            <input type="date" id="editStartDate" value="${startDate}" style="flex: 1;">
+            <input type="date" id="editEndDate" value="${endDate}" style="flex: 1;">
+          </div>
+          <input type="number" id="editRequiredHours" placeholder="Required Hours" value="${data.requiredHours || '0'}">
+        `;
+      } else if (editFullName) {
+        // Static form elements from second script
+        editFullName.value = data.fullName || '';
+        document.getElementById('editStudentID').value = data.studentID || '';
+        document.getElementById('editCourse').value = data.course || '';
+        document.getElementById('editYear').value = data.year || '';
+        document.getElementById('editSchool').value = data.school || '';
+        document.getElementById('editCompany').value = data.company || '';
+        document.getElementById('editOjtAdviser').value = data.ojtAdviser || '';
+        document.getElementById('editAdviserEmail').value = data.adviserEmail || '';
+        
+        // Handle nested ojtPeriod object
+        if (data.ojtPeriod) {
+          document.getElementById('editStartDate').value = data.ojtPeriod.startDate || '';
+          document.getElementById('editEndDate').value = data.ojtPeriod.endDate || '';
+        } else {
+          document.getElementById('editStartDate').value = '';
+          document.getElementById('editEndDate').value = '';
+        }
+        
+        document.getElementById('editRequiredHours').value = data.requiredHours || '';
+      }
+    }
+
+    // Load logbook entries
+    function loadLogbookEntries() {
+      const logbookBody = document.getElementById('logbookEntries');
+      if (!logbookBody) {
+        console.warn("Logbook entries table not found in the document");
+        return;
+      }
+      
+      let totalHours = 0;
+      
+      db.collection('logbook')
+        .where('userId', '==', currentUser.uid)
+        .orderBy('date', 'desc')
+        .get()
+        .then((querySnapshot) => {
+          if (querySnapshot.empty) {
+            logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No logbook entries yet</td></tr>';
+          } else {
+            let entriesHtml = '';
+            
+            querySnapshot.forEach((doc) => {
+              const entry = doc.data();
+              const status = entry.status || 'Pending';
+              const statusClass = status.toLowerCase() === 'approved' ? 'approved' : '';
+              const hours = parseFloat(entry.hours) || 0;
+              
+              // Add to total if approved
+              if (status.toLowerCase() === 'approved') {
+                totalHours += hours;
+              }
+              
+              entriesHtml += `
+                <tr>
+                  <td>${entry.date}</td>
+                  <td>${entry.activity || 'No description'}</td>
+                  <td>${hours}</td>
+                  <td><span class="status ${statusClass}">${status}</span></td>
+                </tr>
+              `;
+            });
+            
+            logbookBody.innerHTML = entriesHtml;
+            
+            // Update completed hours
+            const completedHoursDisplay = document.getElementById('completedHoursDisplay');
+            if (completedHoursDisplay) {
+              completedHoursDisplay.textContent = totalHours.toFixed(1);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error loading logbook entries:", error);
+          if (logbookBody) {
+            logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Failed to load logbook entries</td></tr>';
+          }
+        });
+    }
+
+    // Toggle between view and edit modes
+    function toggleEdit() {
+      // Check which UI structure we're using
+      const profileView = document.getElementById('profileView');
+      const profileEdit = document.getElementById('profileEdit');
+      
+      if (profileView && profileEdit) {
+        // Second script approach
+        if (profileView.style.display === 'none') {
+          // Switch to view mode
+          profileView.style.display = 'block';
+          profileEdit.style.display = 'none';
+        } else {
+          // Switch to edit mode
+          profileView.style.display = 'none';
+          profileEdit.style.display = 'block';
+        }
+      } else {
+        // First script approach
+        const details = document.getElementById('profileDetails');
+        const editDetails = document.getElementById('editDetails');
+        const saveBtn = document.querySelector('.save-btn');
+        const editBtn = document.querySelector('.edit-btn');
+        
+        if (editDetails.style.display === 'none') {
+          details.style.display = 'none';
+          editDetails.style.display = 'block';
+          saveBtn.style.display = 'block';
+          editBtn.textContent = 'Cancel';
+        } else {
+          details.style.display = 'block';
+          editDetails.style.display = 'none';
+          saveBtn.style.display = 'none';
+          editBtn.textContent = 'Edit Profile';
+        }
+      }
+    }
+
+    // Handle photo upload
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // File size validation (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showNotification('Image too large. Please select an image under 5MB.', 'error');
+        return;
+      }
+      
+      // File type validation
+      if (!file.type.includes('image/')) {
+        showNotification('Please select a valid image file.', 'error');
+        return;
+      }
+      
+      // Update image preview
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const profileImg = document.getElementById('profileImg');
+        const profileImageDisplay = document.getElementById('profileImageDisplay');
+        
+        if (profileImg) profileImg.src = e.target.result;
+        if (profileImageDisplay) profileImageDisplay.src = e.target.result;
+      }
+      reader.readAsDataURL(file);
+      
+      // Upload to Firebase Storage
+      const storageRef = storage.ref();
+      const profileImgRef = storageRef.child(`profileImages/${currentUser.uid}`);
+      
+      showNotification('Uploading profile picture...', 'success');
+      
+      profileImgRef.put(file).then(() => {
+        showNotification('Profile picture updated successfully!', 'success');
+      }).catch((error) => {
+        console.error("Error uploading image:", error);
+        showNotification('Failed to upload profile picture. Please try again.', 'error');
+      });
+    }
+
+    // Save profile changes
+    function saveChanges() {
+      // Show notification
+      showNotification('Saving changes...', 'success');
+      
+      // Since we might have different UI structures, we need to get elements carefully
+      const getElementValueSafely = (id) => {
+        const element = document.getElementById(id);
+        return element ? element.value.trim() : '';
+      };
+      
+      const updatedData = {
+        fullName: getElementValueSafely('editFullName'),
+        studentID: getElementValueSafely('editStudentID'),
+        course: getElementValueSafely('editCourse'),
+        year: getElementValueSafely('editYear'),
+        school: getElementValueSafely('editSchool'),
+        company: getElementValueSafely('editCompany'),
+        ojtAdviser: getElementValueSafely('editOjtAdviser'),
+        adviserEmail: getElementValueSafely('editAdviserEmail'),
+        requiredHours: getElementValueSafely('editRequiredHours'),
+        ojtPeriod: {
+          startDate: getElementValueSafely('editStartDate'),
+          endDate: getElementValueSafely('editEndDate')
+        },
+        email: currentUser.email,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      
+      // If there wasn't a user doc before, add creation timestamp
+      if (!userData.createdAt) {
+        updatedData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      }
+      
+      console.log("Saving updated user data:", updatedData);
+      
+      // Update in Firestore with merge option to preserve any fields we're not updating
+      db.collection('users').doc(currentUser.uid).set(updatedData, { merge: true })
+        .then(() => {
+          // Update local copy of userData
+          userData = {...userData, ...updatedData};
+          
+          console.log("Profile updated successfully");
+          
+          // Show success message
+          showNotification('Profile updated successfully!', 'success');
+          
+          // Switch back to view mode
+          toggleEdit();
+          
+          // Refresh display
+          populateProfileDetails(userData);
+        })
+        .catch((error) => {
+          console.error("Error updating profile:", error);
+          showNotification('Failed to update profile. Please try again.', 'error');
+        });
+    }
+
+    // Send verification email
+    function setupVerifyEmailButton() {
+      const verifyEmailBtn = document.getElementById('verifyEmailBtn');
+      if (verifyEmailBtn) {
+        verifyEmailBtn.addEventListener('click', function() {
+          currentUser.sendEmailVerification()
+            .then(() => {
+              showNotification('Verification email sent! Please check your inbox.', 'success');
+            })
+            .catch((error) => {
+              console.error("Error sending verification email:", error);
+              showNotification('Failed to send verification email. Please try again later.', 'error');
+            });
+        });
+      }
+    }
+
+    // Show notification message
+    function showNotification(message, type) {
+      const notification = document.getElementById('notification');
+      if (!notification) {
+        console.warn("Notification element not found");
+        return;
+      }
+      
+      notification.innerText = message;
+      
+      // Handle different class structures
+      if (notification.classList.contains('notification')) {
+        notification.className = 'notification ' + type;
+      } else {
+        notification.className = '';
+        notification.classList.add('notification');
+        notification.classList.add(type);
+      }
+      
+      notification.style.display = 'block';
+      
+      // Auto-hide after some time
+      const timeout = type === 'success' ? 3000 : 5000;
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, timeout);
+    }
+
+    // Main initialization
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log("Document loaded, setting up event listeners");
+      
+      // Set up event listeners for buttons based on their existence
+      setupVerifyEmailButton();
+      
+      // Handle edit profile buttons (check both possible button IDs)
+      const editProfileBtn = document.getElementById('editProfileBtn');
+      const editBtn = document.querySelector('.edit-btn');
+      
+      if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', toggleEdit);
+      } else if (editBtn) {
+        editBtn.addEventListener('click', toggleEdit);
+      }
+      
+      // Handle cancel button if it exists
+      const cancelEditBtn = document.getElementById('cancelEditBtn');
+      if (cancelEditBtn) {
+        cancelEditBtn.addEventListener('click', toggleEdit);
+      }
+      
+      // Handle save button (check both possible button IDs/classes)
+      const saveChangesBtn = document.getElementById('saveChangesBtn');
+      const saveBtn = document.querySelector('.save-btn');
+      
+      if (saveChangesBtn) {
+        saveChangesBtn.addEventListener('click', saveChanges);
+      } else if (saveBtn) {
+        saveBtn.addEventListener('click', saveChanges);
+      }
+      
+      // Handle photo upload if the input exists
+      const photoUploadInput = document.getElementById('photoUpload');
+      if (photoUploadInput) {
+        photoUploadInput.addEventListener('change', handlePhotoUpload);
+      }
+      
+      // Note: We don't need to explicitly call auth state listeners or load user data
+      // as that's handled by the auth.onAuthStateChanged listener
+    });
+  </script>
+</body>
+</html>
