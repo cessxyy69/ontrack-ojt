@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasks | OnTrack</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -332,6 +333,30 @@
             border: 1px solid #DBDBDB;
             border-radius: 6px;
             cursor: pointer;
+        }
+
+        .task-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            color: #547792;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            background-color: rgba(84, 119, 146, 0.1);
         }
 
         /* Added disabled button styling */
@@ -773,7 +798,15 @@
                 <div class="task-header">Tasks</div>
                 <div class="task-subheader">Manage your OJT tasks and deadlines</div>
             </div>
-            <button class="btn" onclick="openForm()">+ New Task</button>
+            <div class="task-header-actions">
+                <button class="icon-btn" title="Archived Tasks" onclick="showArchivedTasks()">
+                    <i class="fas fa-archive"></i>
+                </button>
+                <button class="icon-btn" title="Recently Deleted" onclick="showDeletedTasks()">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                <button class="btn" onclick="openForm()">+ New Task</button>
+            </div>
         </div>
 
         <div class="filter-section">
@@ -948,6 +981,10 @@
           });
         } // end
 
+        // Initialize arrays for archived and deleted tasks
+        let archivedTasks = [];
+        let deletedTasks = [];
+
         let tasks = [];
         let isEditing = false;
         let editingTaskIndex = null;
@@ -973,14 +1010,21 @@
         }
 
         window.onload = () => {
-            // First check if this is a new user
             checkIfNewUser();
-            
-            // Then load tasks - will be empty for new users
-            loadTasks();
+            loadAllTasksData();
             renderTasks();
             updateStats();
         };
+
+        // Save archived tasks
+        function saveArchivedTasks() {
+            localStorage.setItem('archivedTasks', JSON.stringify(archivedTasks));
+        }
+
+        // Save deleted tasks
+        function saveDeletedTasks() {
+            localStorage.setItem('deletedTasks', JSON.stringify(deletedTasks));
+        }
 
         function loadTasks() {
             const saved = localStorage.getItem('tasks');
@@ -996,6 +1040,23 @@
                         task.attachments = [];
                     }
                 });
+            }
+        }
+
+        // Load archived and deleted tasks on page load
+        function loadAllTasksData() {
+            loadTasks(); // Your existing function
+            
+            // Load archived tasks
+            const savedArchived = localStorage.getItem('archivedTasks');
+            if (savedArchived) {
+                archivedTasks = JSON.parse(savedArchived);
+            }
+            
+            // Load deleted tasks
+            const savedDeleted = localStorage.getItem('deletedTasks');
+            if (savedDeleted) {
+                deletedTasks = JSON.parse(savedDeleted);
             }
         }
 
@@ -1598,33 +1659,490 @@
 
         function archiveTask(index) {
             if (index < 0 || index >= tasks.length) return;
-
-            const title = tasks[index].title;
-            alert(`"${title}" will be moved to Archived (not implemented yet).`);
-            // Placeholder – implement real archiving later
-
+            
+            // Move task to archived
+            const taskToArchive = tasks[index];
+            archivedTasks.push(taskToArchive);
+            tasks.splice(index, 1);
+            
+            // Save changes
+            saveTasks();
+            saveArchivedTasks();
+            renderTasks();
+            updateStats();
+            
+            // Show confirmation
+            alert(`"${taskToArchive.title}" has been archived.`);
+            
             // Close all dropdowns
             document.querySelectorAll('.dropdown').forEach(menu => {
                 menu.style.display = 'none';
             });
         }
+
 
         function deleteTask(index) {
-            if (index < 0 || index >= tasks.length) return;
+    if (index < 0 || index >= tasks.length) return;
 
-            const title = tasks[index].title;
-            if (confirm(`Are you sure you want to delete "${title}"?`)) {
-                tasks.splice(index, 1);
-                saveTasks();
-                renderTasks();
-                updateStats();
-            }
+    const taskToDelete = tasks[index];
+    if (confirm(`Are you sure you want to delete "${taskToDelete.title}"?`)) {
+        // Add deletion timestamp and move to deleted tasks
+        taskToDelete.deletedAt = new Date().toISOString();
+        deletedTasks.push(taskToDelete);
+        
+        // Remove from active tasks
+        tasks.splice(index, 1);
+        
+        // Save changes
+        saveTasks();
+        saveDeletedTasks();
+        renderTasks();
+        updateStats();
+    }
 
-            // Close all dropdowns
-            document.querySelectorAll('.dropdown').forEach(menu => {
-                menu.style.display = 'none';
-            });
+    // Close all dropdowns
+    document.querySelectorAll('.dropdown').forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
+
+// Function to show archived tasks
+function showArchivedTasks() {
+    // Create and show archived tasks overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.id = 'archivedTasksOverlay';
+    
+    overlay.innerHTML = `
+        <div class="modal-container archived-container">
+            <div class="modal-header">
+                <h2>Archived Tasks</h2>
+                <button class="close-modal-btn" onclick="closeArchivedTasks()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="archived-tasks-list" id="archived-tasks-list">
+                    ${renderArchivedTasksList()}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+// Function to render archived tasks list
+function renderArchivedTasksList() {
+    if (archivedTasks.length === 0) {
+        return '<p>No archived tasks found.</p>';
+    }
+    
+    let html = '';
+    archivedTasks.forEach((task, index) => {
+        const dateFormatted = new Date(task.dueDate).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+        
+        html += `
+            <div class="archived-task-item">
+                <div class="archived-task-info">
+                    <h3>${task.title}</h3>
+                    <p>Due: ${dateFormatted} | Priority: ${task.priority}</p>
+                </div>
+                <div class="archived-task-actions">
+                    <button class="btn" onclick="restoreArchivedTask(${index})">Unarchive</button>
+                    <button class="btn delete-btn" onclick="permanentlyDeleteArchivedTask(${index})">Delete</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+// Function to close archived tasks overlay
+function closeArchivedTasks() {
+    const overlay = document.getElementById('archivedTasksOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 300); // Match the transition duration
+    }
+}
+
+// Function to restore archived task
+function restoreArchivedTask(index) {
+    if (index < 0 || index >= archivedTasks.length) return;
+    
+    const taskToRestore = archivedTasks[index];
+    tasks.push(taskToRestore);
+    archivedTasks.splice(index, 1);
+    
+    saveTasks();
+    saveArchivedTasks();
+    
+    // Refresh the archived tasks list
+    document.getElementById('archived-tasks-list').innerHTML = renderArchivedTasksList();
+    
+    // Show confirmation
+    alert(`"${taskToRestore.title}" has been restored to your tasks.`);
+    
+    // Add this line to update the main task list
+    renderTasks();
+}
+
+// Function to permanently delete archived task
+function permanentlyDeleteArchivedTask(index) {
+    if (index < 0 || index >= archivedTasks.length) return;
+    
+    const taskToDelete = archivedTasks[index];
+    if (confirm(`Are you sure you want to permanently delete "${taskToDelete.title}"?`)) {
+        archivedTasks.splice(index, 1);
+        saveArchivedTasks();
+        
+        // Refresh the archived tasks list
+        document.getElementById('archived-tasks-list').innerHTML = renderArchivedTasksList();
+    }
+}
+
+// Function to show deleted tasks
+function showDeletedTasks() {
+    // Create and show deleted tasks overlay
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay active';
+    overlay.id = 'deletedTasksOverlay';
+    
+    overlay.innerHTML = `
+        <div class="modal-container deleted-container">
+            <div class="modal-header">
+                <h2>Recently Deleted Tasks</h2>
+                <button class="close-modal-btn" onclick="closeDeletedTasks()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="deleted-tasks-list" id="deleted-tasks-list">
+                    ${renderDeletedTasksList()}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+}
+
+function addEnhancedModalCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Modal overlay styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Modal container styling */
+        .modal-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: modal-appear 0.3s ease-out;
+        }
+        
+        @keyframes modal-appear {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Modal header styling */
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .close-modal-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+        
+        .close-modal-btn:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        
+        /* Modal body styling */
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 24px;
+            max-height: 60vh;
+        }
+        
+        /* Modal footer styling */
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #eaeaea;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        /* Task items styling */
+        .archived-task-item, .deleted-task-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px;
+            border-bottom: 1px solid #eaeaea;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+        
+        .archived-task-item:hover, .deleted-task-item:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .archived-task-item:last-child, .deleted-task-item:last-child {
+            border-bottom: none;
+        }
+        
+        .archived-task-info, .deleted-task-info {
+            flex: 1;
+        }
+        
+        .archived-task-info h3, .deleted-task-info h3 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        .archived-task-info p, .deleted-task-info p {
+            margin: 0 0 4px 0;
+            color: #666;
+        }
+        
+        .deleted-date {
+            font-size: 0.85em;
+            color: #888;
+            font-style: italic;
+        }
+        
+        /* Task action buttons */
+        .archived-task-actions, .deleted-task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .delete-btn {
+            background-color: #f43f5e;
+        }
+        
+        /* Empty state styling */
+        .archived-tasks-list p, .deleted-tasks-list p {
+            text-align: center;
+            padding: 24px;
+            color: #888;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .archived-task-item, .deleted-task-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .archived-task-actions, .deleted-task-actions {
+                margin-top: 12px;
+                width: 100%;
+            }
+            
+            .archived-task-actions button, .deleted-task-actions button {
+                flex: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Function to render deleted tasks list
+function renderDeletedTasksList() {
+    if (deletedTasks.length === 0) {
+        return '<p>No recently deleted tasks found.</p>';
+    }
+    
+    // Sort by deletion date, newest first
+    const sortedTasks = [...deletedTasks].sort((a, b) => 
+        new Date(b.deletedAt) - new Date(a.deletedAt)
+    );
+    
+    let html = '';
+    sortedTasks.forEach((task, index) => {
+        const dateFormatted = new Date(task.dueDate).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+        
+        const deletedDateFormatted = new Date(task.deletedAt).toLocaleDateString('en-US', {
+            month: 'short', day: 'numeric', year: 'numeric'
+        });
+        
+        // Find the original index in the deletedTasks array
+        const originalIndex = deletedTasks.findIndex(t => 
+            t.title === task.title && t.deletedAt === task.deletedAt
+        );
+        
+        html += `
+            <div class="deleted-task-item">
+                <div class="deleted-task-info">
+                    <h3>${task.title}</h3>
+                    <p>Due: ${dateFormatted} | Priority: ${task.priority}</p>
+                    <p class="deleted-date">Deleted on: ${deletedDateFormatted}</p>
+                </div>
+                <div class="deleted-task-actions">
+                    <button class="btn" onclick="restoreDeletedTask(${originalIndex})">Restore</button>
+                    <button class="btn delete-btn" onclick="permanentlyDeleteTask(${originalIndex})">Delete Forever</button>
+                </div>
+            </div>
+        `;
+    });
+    
+    return html;
+}
+
+// Function to close deleted tasks overlay
+function closeDeletedTasks() {
+    const overlay = document.getElementById('deletedTasksOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            document.body.removeChild(overlay);
+        }, 300); // Match the transition duration
+    }
+}
+
+// Function to restore deleted task
+function restoreDeletedTask(index) {
+    if (index < 0 || index >= deletedTasks.length) return;
+    
+    const taskToRestore = deletedTasks[index];
+    // Remove the deletedAt property
+    delete taskToRestore.deletedAt;
+    
+    tasks.push(taskToRestore);
+    deletedTasks.splice(index, 1);
+    
+    saveTasks();
+    saveDeletedTasks();
+    
+    // Refresh the deleted tasks list
+    document.getElementById('deleted-tasks-list').innerHTML = renderDeletedTasksList();
+    
+    // Show confirmation
+    alert(`"${taskToRestore.title}" has been restored to your tasks.`);
+    
+    // Add this line to update the main task list
+    renderTasks();
+}
+
+// Function to permanently delete task
+function permanentlyDeleteTask(index) {
+    if (index < 0 || index >= deletedTasks.length) return;
+    
+    const taskToDelete = deletedTasks[index];
+    if (confirm(`Are you sure you want to permanently delete "${taskToDelete.title}"? This cannot be undone.`)) {
+        deletedTasks.splice(index, 1);
+        saveDeletedTasks();
+        
+        // Refresh the deleted tasks list
+        document.getElementById('deleted-tasks-list').innerHTML = renderDeletedTasksList();
+    }
+}
+
+// Add this CSS for the archived and deleted task lists
+function addAdditionalCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .archived-container, .deleted-container {
+            max-width: 800px;
+            width: 90%;
+        }
+        
+        .archived-task-item, .deleted-task-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .archived-task-info, .deleted-task-info {
+            flex: 1;
+        }
+        
+        .archived-task-actions, .deleted-task-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .delete-btn {
+            background-color: #f43f5e;
+        }
+        
+        .deleted-date {
+            font-size: 0.8em;
+            color: #888;
+        }
+        
+        .archived-tasks-list, .deleted-tasks-list {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Call this function when the page loads
+window.addEventListener('DOMContentLoaded', addAdditionalCSS);
+window.addEventListener('DOMContentLoaded', addEnhancedModalCSS);
 
         document.addEventListener('click', function (e) {
             // Close dropdowns if clicking outside
