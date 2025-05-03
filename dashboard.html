@@ -55,7 +55,7 @@
   </nav>
 
   <main class="main-content-dashboard">
-    <h1 class="pdash">Welcome, Demo Student</h1>
+    <h1 class="pdash">Welcome, <span id="userFullName">Loading...</span></h1>
     <p class="subtitle">Here's your OJT progress summary</p>
 
     <button class="log-activity-btn" id="openLogForm">
@@ -124,21 +124,13 @@
     <section class="quick-actions">
       <h2 class="quick-title">🗂️ Quick Actions</h2>
 
-      <button class="quick-btn log" id="quickLogActivity">
-        ⏱️ Log Activity
-      </button>
+      <button class="quick-btn log" id="quickLogActivity">⏱️ Log Activity</button>
 
-      <button class="quick-btn task" id="createTaskBtn">
-        🗒️ Create Task
-      </button>
+      <button class="quick-btn task" id="createTaskBtn">🗒️ Create Task</button>
 
-      <button class="quick-btn white">
-        📄 Generate Report
-      </button>
+      <button class="quick-btn white" onclick="location.href='reports.html'">📄 Generate Report</button>
 
-      <button class="quick-btn white">
-        ⏰ Update Profile
-      </button>
+      <button class="quick-btn white" onclick="location.href='profile.html'">⏰ Update Profile</button>
     </section>
   </main>
 
